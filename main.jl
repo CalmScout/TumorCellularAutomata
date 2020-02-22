@@ -149,31 +149,8 @@ for t in 1:Nstep
                                     Popvox, Popgen, Necvox, K, i, j, k, e)
 
                             # Mutation event
-                            mutrate = Mutrate*(1-binGb[1]*Mutweight[1]-binGb[2]*Mutweight[2]-binGb[3]*Mutweight[3]);
-                            Pmut = (deltat/mutrate)*(Popgen/K);
-                            if Pmut > 1
-                                Pmut = 1;
-                            end
-                            if Pmut < 0
-                                Pmut = 0;
-                            end
-                            r = rand(1);
-                            r = r[1];
-                            if r < Pmut && e != 2^alt
-                                # Pick a random empty slot and turn it to mutated
-                                nonalter = findall(x -> x < 1, binGb);
-                                r2 = rand(1:length(nonalter));
-                                mutating = nonalter[r2];
-                                binGb[mutating] = 1;
-
-                                # Switch binary array back to binary string
-                                binGc = string(Int(binGb[1]),Int(binGb[2]),Int(binGb[3]));
-
-                                # Code below retrieves back decimal number from binary string
-                                decG = parse(Int, binGc, base=2)+1;
-                                Gnext[i,j,k,e] = Gnext[i,j,k,e] - 1;
-                                Gnext[i,j,k,decG] = Gnext[i,j,k,decG] + 1;
-                            end
+                            mutation_event(Mutrate, binGb, Mutweight, deltat,
+                            Popgen, K)
                         end
                     end
 
