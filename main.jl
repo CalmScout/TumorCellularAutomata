@@ -6,6 +6,8 @@ using MAT
 
 # import predefined constants / parameters
 include("constants.jl")
+# import helper functions
+include("tools.jl")
 
 Random.seed!(seedVal);;
 
@@ -125,17 +127,8 @@ for t in 1:Nstep
                     for e in 1:2^alt
                         # Only evaluate population if there is at least 1 cell
                         if G[i,j,k,e] > 0
-
-                            # Code below converts decimal number to binary string
-                            binG = string(e-1, base=2);     # First of all, we retrieve binary string
-                            while length.(binG) < 3         # As the string may not be of length 0, we solve this
-                                binG = string("0",binG);
-                            end
-                            binGa = split(binG,"");         # Now we need an array instead of a string
-                            binGb = zeros(length(binGa));   # We create a new variable to store int array
-                            for i in 1:length(binGa)        # We convert array elements from char to int
-                               binGb[i] = parse(Int,binGa[i]);
-                            end
+                            # receive binary representation
+                            binGb = decimal2binstr(e);
 
                             # Retrieve voxel info
                             Popgen = G[i,j,k,e];
