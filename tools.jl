@@ -113,9 +113,9 @@ function migration_event(Migrate, binGb, Migweight, deltat, Popvox, Popgen, Necv
 
     neigh = 0;
     # left = migrants;
-    moore = 18;
+    moore = 26;
     vonN = 6;
-    multinom = Multinomial(migrants,repeat([1/moore],moore));
+    multinom = Multinomial(migrants,wcube);
     gone = rand(multinom);
     for movi in [-1,0,1]
         for movj in [-1,0,1]
@@ -123,9 +123,7 @@ function migration_event(Migrate, binGb, Migweight, deltat, Popvox, Popgen, Necv
                 xmov = i+movi;
                 ymov = j+movj;
                 zmov = k+movk;
-
-                # if xmov < N+1 && ymov < N+1 && zmov < N+1 && xmov > 0 && ymov > 0 && zmov > 0 && abs(movi)+abs(movj)+abs(movk)==1
-                if xmov < N+1 && ymov < N+1 && zmov < N+1 && xmov > 0 && ymov > 0 && zmov > 0 && abs(movi)+abs(movj)+abs(movk)!=3 && abs(movi)+abs(movj)+abs(movk)!=0
+                if xmov < N+1 && ymov < N+1 && zmov < N+1 && xmov > 0 && ymov > 0 && zmov > 0 && abs(movi)+abs(movj)+abs(movk)!=0
                     neigh = neigh + 1;
                     Gnext[xmov,ymov,zmov,e] = Gnext[xmov,ymov,zmov,e] + gone[neigh];
                     Gnext[i,j,k,e] = Gnext[i,j,k,e] - gone[neigh];

@@ -145,40 +145,8 @@ for t in 1:Nstep
                                         Popvox, Necvox, K, Popgen, i, j, k, e)
 
                             # Migration event
-                            migrate = Migrate*(1-binGb[1]*Migweight[1]-binGb[2]*Migweight[2]-binGb[3]*Migweight[3]);
-                            Pmig = (deltat/migrate)*(Popvox+Necvox)/K;
-                            if Pmig > 1
-                                Pmig = 1;
-                            end
-                            if Pmig < 0
-                                Pmig = 0;
-                            end
-                            migrants = rand(Binomial(Int64(Popgen),Pmig));
-
-                            neigh = 0;
-                            # left = migrants;
-                            moore = 18;
-                            moore = 26;
-                            vonN = 6;
-                            # multinom = Multinomial(migrants,repeat([1/moore],moore));
-                            multinom = Multinomial(migrants,wcube);
-                            gone = rand(multinom);
-                            for movi in [-1,0,1]
-                                for movj in [-1,0,1]
-                                    for movk = [-1,0,1]
-                                        xmov = i+movi;
-                                        ymov = j+movj;
-                                        zmov = k+movk;
-                                        if xmov < N+1 && ymov < N+1 && zmov < N+1 && xmov > 0 && ymov > 0 && zmov > 0 && abs(movi)+abs(movj)+abs(movk)!=0
-
-                                            neigh = neigh + 1;
-                                            Gnext[xmov,ymov,zmov,e] = Gnext[xmov,ymov,zmov,e] + gone[neigh];
-                                            Gnext[i,j,k,e] = Gnext[i,j,k,e] - gone[neigh];
-                                        end
-
-                                    end
-                                end
-                            end
+                            migration_event(Migrate, binGb, Migweight, deltat,
+                                    Popvox, Popgen, Necvox, K, i, j, k, e)
 
                             # Mutation event
                             mutrate = Mutrate*(1-binGb[1]*Mutweight[1]-binGb[2]*Mutweight[2]-binGb[3]*Mutweight[3]);
