@@ -141,18 +141,8 @@ for t in 1:Nstep
                                                 deltat, i, j, k, e, alt, binGb)
 
                             # Death event
-                            drate = Drate*(1-binGb[1]*Dweight[1]-binGb[2]*Dweight[2]-binGb[3]*Dweight[3]);
-                            Pkill = (deltat/drate)*(Popvox+Necvox)/K;
-                            if Pkill > 1
-                                Pkill = 1;
-                            end
-                            if Pkill < 0
-                                Pkill = 0;
-                            end
-                            dead = rand(Binomial(Int64(Popgen),Pkill));
-                            Gnext[i,j,k,e] = Gnext[i,j,k,e] - dead;
-                            Necnext[i,j,k] = Necnext[i,j,k] + dead;
-                            # println(" Dead cells: ",dead)
+                            dead = death_event(Drate, binGb, Dweight, deltat,
+                                        Popvox, Necvox, K, Popgen, i, j, k, e)
 
                             # Migration event
                             migrate = Migrate*(1-binGb[1]*Migweight[1]-binGb[2]*Migweight[2]-binGb[3]*Migweight[3]);
