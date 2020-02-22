@@ -136,19 +136,9 @@ for t in 1:Nstep
                             Necvox = Nec[i,j,k];
 
                             # Reproduction event
-                            # born = rep(Popgen,Popvox,K,Necvox,Grate,deltat,e,alt);
-                            grate = Grate*(1-binGb[1]*Gweight[1]-binGb[2]*Gweight[2]-binGb[3]*Gweight[3]);
-                            Prep = (deltat/grate)*(1-(Popvox+Necvox)/K);
-                            if Prep > 1
-                                Prep = 1;
-                            end
-                            if Prep < 0
-                                Prep = 0;
-                            end
-                            born = rand(Binomial(Int64(Popgen),Prep));
-                            Gnext[i,j,k,e] = Gnext[i,j,k,e] + born;
-                            Actnext[i,j,k] = Actnext[i,j,k] + born;
-                            # println(" Newborn cells: ",born)
+                            born =
+                            reproduction_event(Popgen, Popvox, K, Necvox, Grate,
+                                                deltat, i, j, k, e, alt, binGb)
 
                             # Death event
                             drate = Drate*(1-binGb[1]*Dweight[1]-binGb[2]*Dweight[2]-binGb[3]*Dweight[3]);
