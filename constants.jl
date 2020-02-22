@@ -1,6 +1,8 @@
 """
     Contains constants / initial conditions of simulation.
 """
+# value of random number generator seed
+seedVal = 42;
 
 # Set time of simulation
 deltat = 4; # hours

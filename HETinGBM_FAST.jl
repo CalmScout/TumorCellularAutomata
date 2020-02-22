@@ -3,10 +3,11 @@ using Distributions
 using Random
 using DelimitedFiles
 using MAT
-Random.seed!(42);
 
 # import predefined constants / parameters
 include("constants.jl")
+
+Random.seed!(seedVal);;
 
 while (Grate/Migrate) < 0.25 || (Migrate/Grate) < 0.1
     global Grate;
