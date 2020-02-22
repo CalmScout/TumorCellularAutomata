@@ -1,10 +1,9 @@
-
 # Will come in handy to random sample from binomial distributions
 using Distributions
 using Random
 using DelimitedFiles
 using MAT
-Random.seed!();
+Random.seed!(42);
 
 # Set time of simulation
 deltat = 4; # hours
@@ -91,7 +90,7 @@ Drate = rand(Uniform(MinDrate,MaxDrate));
 Mutrate = rand(Uniform(MinMutrate,MaxMutrate));
 
 
-io = open("Params.txt", "w");
+io = open("files/Params.txt", "w");
 write(io,"$Grate $Drate $Mutrate $Migrate\n")
 close(io);
 
@@ -347,8 +346,8 @@ t = 0;
                 Simpson[evalstep+1] = Simpson[evalstep+1] + (pops[e,evalstep+1]/totpop[evalstep+1])^2;
             end
         end
-
-        filename = string("Gen_space_",string(Int64(t)),".txt");
+        dir_to_save = joinpath(@__DIR__, "files/")
+        filename = joinpath(dir_to_save, string("Gen_space_",string(Int64(t)),".txt"));
         open(filename, "w") do f
             for i in 1:N
                 for j in 1:N
@@ -388,13 +387,14 @@ t = 0;
 end
 
 
-# Store tracking variables into files
-writedlm("Totpop.txt", totpop);
-writedlm("Totnec.txt", totnec);
-writedlm("VolPET.txt", vol);
-writedlm("Vol_real.txt", Rvol);
-writedlm("ActPET.txt", totnew);
-writedlm("Act_real.txt", Rtotnew);
-writedlm("Shannon.txt", Shannon);
-writedlm("Simpson.txt", Simpson);
-writedlm("Genspop.txt", pops);
+# Store tracking variables into files in `files` subfolder
+dir_to_save = joinpath(@__DIR__, "files/")
+writedlm(joinpath(dir_to_save, "Totpop.txt"), totpop);
+writedlm(joinpath(dir_to_save, "Totnec.txt"), totnec);
+writedlm(joinpath(dir_to_save, "VolPET.txt"), vol);
+writedlm(joinpath(dir_to_save, "Vol_real.txt"), Rvol);
+writedlm(joinpath(dir_to_save, "ActPET.txt"), totnew);
+writedlm(joinpath(dir_to_save, "Act_real.txt"), Rtotnew);
+writedlm(joinpath(dir_to_save, "Shannon.txt"), Shannon);
+writedlm(joinpath(dir_to_save, "Simpson.txt"), Simpson);
+writedlm(joinpath(dir_to_save, "Genspop.txt"), pops);
