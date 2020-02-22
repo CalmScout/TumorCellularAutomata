@@ -7,7 +7,6 @@ using MAT
 Random.seed!();
 
 # Set time of simulation
-# deltat = 24;
 deltat = 4; # hours
 tspan = 6*10*365*deltat;
 Nstep = tspan/deltat
@@ -17,10 +16,6 @@ alt = 3;
 
 # Create array of population cells, necrotics, and activity per voxel
 N = 80;
-#G = Array{Int64}(undef,N,N,N,2^alt);
-#Nec = Array{Int64}(undef,N,N,N);
-#Act = Array{Int64}(undef,N,N,N);
-#Rho = Array{Int64}(undef,N,N,N);
 
 G = zeros(N,N,N,2^alt);
 Nec = zeros(N,N,N);
@@ -70,41 +65,8 @@ Necnext = Nec;
 Actnext = Act;
 Rhonext = Rho;
 
-# For SIMS1 and SIMS2
-# Set all rates
-# Grate = 1200;
-# Drate = 2000;
-# Mutrate = 2000;
-# Migrate = 1000;
-# # Set all weights
-# Gweight = [0.35,0.3,0.25];
-# Dweight = [-0.15,-0.05,-0.45];
-# Mutweight = [0.2,0.2,0.55];
-# Migweight = [0.8,0,0];
-#
-# # Set all rates (slightly tuned)
-# Grate = 1000;
-# Drate = 1660;
-# Mutrate = 1660;
-# Migrate = 850;
-# # Set all weights (slightly tuned)
-# Gweight = [0.32,0.28,0.25];
-# Dweight = [-0.15,-0.05,-0.45];
-# Mutweight = [0.18,0.18,0.52];
-# Migweight = [0.65,0.05,0.05];
-#
-# Set all rates (slightly tuned)
-# MinGrate = 50;     # Around 2 days
-# MaxGrate = 250;    # Around 15 days
-# MinDrate = 50;
-# MaxDrate = 400;
-# MinMutrate = 80;
-# MaxMutrate = 240;
-# MinMigrate = 40;   # Around 2 days
-# MaxMigrate = 300;  # Around 25 days
 
-
-MinGrate = 80;     
+MinGrate = 80;
 MaxGrate = 250;    # Around 15 days
 MinDrate = 80;
 MaxDrate = 400;
@@ -128,64 +90,16 @@ end
 Drate = rand(Uniform(MinDrate,MaxDrate));
 Mutrate = rand(Uniform(MinMutrate,MaxMutrate));
 
-# filename = string("Params.txt");
-# open(filename, "w") do f
-#     write(f, "$Grate $Drate $Mutrate $Migrate\n");
-# end
 
 io = open("Params.txt", "w");
 write(io,"$Grate $Drate $Mutrate $Migrate\n")
 close(io);
 
-# Grate = 1100;
-# Drate = 1800;
-# Mutrate = 1800;
-# Migrate = 1000;
 # Set all weights (slightly tuned)
 Gweight = [0.32,0.28,0.25];
 Dweight = [-0.15,-0.05,-0.45];
 Mutweight = [0.18,0.18,0.32];
 Migweight = [0.65,0.05,0.05];
-
-# Gweight = [rand(Uniform(0.2,0.3)),rand(Uniform(0.2,0.3)),rand(Uniform(0.2,0.3))];
-# Dweight = [rand(Uniform(-0.25,-0.1)),rand(Uniform(-0.25,-0.1)),rand(Uniform(-0.25,-0.1))];
-# Mutweight = [rand(Uniform(0.15,0.3)),rand(Uniform(0.15,0.3)),rand(Uniform(0.15,0.3))];
-# Migweight = [rand(Uniform(0.15,0.3)),rand(Uniform(0.15,0.3)),rand(Uniform(0.15,0.3))];
-
-# io = open("Params.txt", "w");
-# write(io,"$Grate $Drate $Mutrate $Migrate $Gweight $Dweight $Mutweight $Migweight\n")
-# close(io);
-
-# # Set all rates (slightly tuned)
-# Grate = 1100;
-# Drate = 1800;
-# Mutrate = 1800;
-# Migrate = 1000;
-# # Set all weights (slightly tuned)
-# Gweight = [0.32,0.28,0.25];
-# Dweight = [-0.15,-0.05,-0.45];
-# Mutweight = [0,0,0];
-# Migweight = [0.65,0.05,0.05];
-
-# # Set of rates and weights for SIMS3
-# Grate = 1200;
-# Drate = 3000;
-# Mutrate = 2000;
-# Migrate = 1000;
-# Gweight = [0.25,0.167,0.083];
-# Dweight = [0.15,0.05,0.3];
-# Mutweight = [0.2,0.2,0.4];
-# Migweight = [0.5,0,0];
-
-# # Set of rates and weights for SIMS4
-# Grate = 800;
-# Drate = 2500;
-# Mutrate = 1500;
-# Migrate = 700;
-# Gweight = [0.25,0.167,0.083];
-# Dweight = [0.15,0.05,0.3];
-# Mutweight = [0.2,0.2,0.4];
-# Migweight = [0.6,0,0];
 
 # Create weights for surrounding voxels (Moore neighbourhood)
 c = 0;
@@ -201,7 +115,6 @@ for i in [-1,0,1]
             if abs(i)+abs(j)+abs(k)!=0
                 c = c+1;
                 wcube[c] = 1/sqrt(abs(i)+abs(j)+abs(k));
-                # println(i,", ",j,", ",k,", ",wcube[c]);
                 sumcube = sumcube + wcube[c];
             end
         end
@@ -234,9 +147,6 @@ t = 0;
 # for t in 1:Nstep
 @time while Vol2[evalstep] < 100000
     t = t + 1;
-    # if t%round(Nstep/Neval) == 1
-    #     global start = time();
-    # end
     # Take care of local scope. Variables updated inside
     # for loop need to be assigned to global scope
     global G;
@@ -271,24 +181,10 @@ t = 0;
     global ROcc;
     # global start;
 
-    # Iterate along each voxel
-    # i = zeros(length(Occ));
-    # j = zeros(length(Occ));
-    # k = zeros(length(Occ));
-
     for l in 1:length(Occ)
-        # i[l] = Int(Occ[l][1]);
-        # j[l] = Int(Occ[l][2]);
-        # k[l] = Int(Occ[l][3]);
-
         i = Int(Occ[l][1]);
         j = Int(Occ[l][2]);
         k = Int(Occ[l][3]);
-
-
-    # for i in 1:N
-    #     for j in 1:N
-    #         for k in 1:N
 
                 # Reinitialize activity at each time step
                 Act[i,j,k] = 0;
@@ -368,29 +264,11 @@ t = 0;
                                         xmov = i+movi;
                                         ymov = j+movj;
                                         zmov = k+movk;
-
-                                        # if xmov < N+1 && ymov < N+1 && zmov < N+1 && xmov > 0 && ymov > 0 && zmov > 0 && abs(movi)+abs(movj)+abs(movk)==1
-                                        # if xmov < N+1 && ymov < N+1 && zmov < N+1 && xmov > 0 && ymov > 0 && zmov > 0 && abs(movi)+abs(movj)+abs(movk)!=3 && abs(movi)+abs(movj)+abs(movk)!=0
                                         if xmov < N+1 && ymov < N+1 && zmov < N+1 && xmov > 0 && ymov > 0 && zmov > 0 && abs(movi)+abs(movj)+abs(movk)!=0
 
                                             neigh = neigh + 1;
                                             Gnext[xmov,ymov,zmov,e] = Gnext[xmov,ymov,zmov,e] + gone[neigh];
                                             Gnext[i,j,k,e] = Gnext[i,j,k,e] - gone[neigh];
-
-                                            # if neigh < 6
-                                            #     gone = rand(Binomial(Int64(migrants),1/6));
-                                            #     Gnext[xmov,ymov,zmov,e] = Gnext[xmov,ymov,zmov,e] + gone;
-                                            #     Gnext[i,j,k,e] = Gnext[i,j,k,e] - gone;
-                                            #     left = left - gone;
-                                            # else
-                                            #     gone = left;
-                                            #     if left < 0
-                                            #         gone = 0;
-                                            #     end
-                                            #     Gnext[xmov,ymov,zmov,e] = Gnext[xmov,ymov,zmov,e] + gone;
-                                            #     Gnext[i,j,k,e] = Gnext[i,j,k,e] - gone;
-                                            # end
-                                            # println("Migrating to: ",xmov," ",ymov," ",zmov," ",Gnext[xmov,ymov,zmov,e])
                                         end
 
                                     end
@@ -423,12 +301,6 @@ t = 0;
                                 Gnext[i,j,k,e] = Gnext[i,j,k,e] - 1;
                                 Gnext[i,j,k,decG] = Gnext[i,j,k,decG] + 1;
                             end
-
-
-
-                            # Just checking if cell number is more o less coherent
-                            # println("  Total cells: ",G[i,j,k,e])
-
                         end
                     end
 
@@ -449,36 +321,18 @@ t = 0;
                         end
                     end
                 end
-    #         end
-    #     end
-    # end
     end
 
     G = Gnext;
     Nec = Necnext;
     Act = Actnext;
     Rho = Rhonext;
-
-    # Do this at each step, as it will help retrieving occupied indices
-    # for i = 1:N
-    #     for j = 1:N
-    #         for k = 1:N
-    #             popt[i,j,k] = sum(G[i,j,k,:]);
-    #             #println(i," ",j," ",k," ",popt[i,j,k])
-    #         end
-    #     end
-    # end
     G2 = sum(G,dims = 4);
-    #popt = G2[:,:,:,1];
     popt = G2[:,:,:,1]+Nec;
 
 
     Occ = findall(x -> x > 0, popt);
-    #println(Occ)
-    #println(popt)
-
     # Housekeeping
-    # if t%round(Nstep/Neval) == 0
     if t%round(Nstep/Neval) == 0
         Shannon[evalstep+1] = 0;
         Simpson[evalstep+1] = 0;
@@ -486,58 +340,6 @@ t = 0;
         ROcc =  findall(x -> x > threshold, popt);
         Vol2[evalstep+1] = size(ROcc,1);
         ROcc = [];
-
-        # filename = string("Act_space_",string(Int64(t)),".txt");
-        # open(filename, "w") do f
-        #     for i in 1:N
-        #         for j in 1:N
-        #             for k in 1:N
-        #                 global G;
-        #                 if Act[i,j,k] > 0
-        #                     wpop = Act[i,j,k];
-        #                     write(f, "$wpop $i $j $k\n");
-        #                 end
-        #             end
-        #         end
-        #     end
-        # end
-        #
-        # filename = string("Nec_space_",string(Int64(t)),".txt");
-        # open(filename, "w") do f
-        #     for i in 1:N
-        #         for j in 1:N
-        #             for k in 1:N
-        #                 global G;
-        #                 if Nec[i,j,k] > 0
-        #                     wpop = Nec[i,j,k];
-        #                     write(f, "$wpop $i $j $k\n");
-        #                 end
-        #             end
-        #         end
-        #     end
-        # end
-
-        # for e = 1:2^alt
-        #     if pops[e,evalstep+1] > 0;
-        #         Shannon[evalstep+1] = Shannon[evalstep+1] - (pops[e,evalstep+1]/totpop[evalstep+1])*log(pops[e,evalstep+1]/totpop[evalstep+1]);
-        #         Simpson[evalstep+1] = Simpson[evalstep+1] + (pops[e,evalstep+1]/totpop[evalstep+1])^2;
-        #
-        #         filename = string("Gen",string(e),"_space_",string(Int64(t)),".txt");
-        #         open(filename, "w") do f
-        #             for i in 1:N
-        #                 for j in 1:N
-        #                     for k in 1:N
-        #                         global G;
-        #                         if G[i,j,k,e] > 0
-        #                             wpop = G[i,j,k,e];
-        #                             write(f, "$wpop $i $j $k\n");
-        #                         end
-        #                     end
-        #                 end
-        #             end
-        #         end
-        #     end
-        # end
 
         for e = 1:2^alt
             if pops[e,evalstep+1] > 0;
@@ -596,32 +398,3 @@ writedlm("Act_real.txt", Rtotnew);
 writedlm("Shannon.txt", Shannon);
 writedlm("Simpson.txt", Simpson);
 writedlm("Genspop.txt", pops);
-
-
-# open("Gen1_space.txt", "w") do f
-#     for i in 1:N
-#         for j in 1:N
-#             for k in 1:N
-#                 global G;
-#                 if G[i,j,k,1] > 0
-#                     wpop = G[i,j,k,1];
-#                     write(f, "$wpop $i $j $k\n");
-#                 end
-#             end
-#         end
-#     end
-# end
-
-#function rep()
-
-
-
-
-# using Plots
-
-# plot(Rvol)
-
-# using Distributions
-
-# sum(G[40,40,40,:]);
-# rand(1,100)
