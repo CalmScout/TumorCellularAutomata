@@ -2,7 +2,6 @@
 using Distributions
 using Random
 using DelimitedFiles
-using MAT
 
 # import predefined constants / parameters
 include("constants.jl")
@@ -11,29 +10,53 @@ include("tools.jl")
 
 Random.seed!(seedVal);
 
-while Grate / Migrate < 0.25 || Migrate / Grate < 0.1
-    global Grate;
-    global Migrate;
-    global MinGrate;     # Around 20 days
-    global MaxGrate;    # Around 200 days
-    global MinMigrate;   # Around 12 days
-    global MaxMigrate;
-    Grate = rand(Uniform(MinGrate, MaxGrate));
-    Migrate = rand(Uniform(MinMigrate, MaxMigrate));
-end
-Drate = rand(Uniform(MinDrate, MaxDrate));
-Mutrate = rand(Uniform(MinMutrate, MaxMutrate));
+# Create array of population cells, necrotics, and activity per voxel
+G = zeros(N, N, N, 2^alt);
+Nec = zeros(N, N, N);
+Act = zeros(N, N, N);
+Rho = zeros(N, N, N);
 
+# Assign initial cell number to population 1 at central voxel
+G[Int64(N/2), Int64(N/2), Int64(N/2), 1] = P0;
+
+# Create swapping matrix
+Gnext = G;
+G2 = G;
+Necnext = Nec;
+Actnext = Act;
+Rhonext = Rho;
+
+# Create monitor variables
+totpop = zeros(Neval);
+totpop[1] = P0;
+totnec = zeros(Neval);
+vol = zeros(Neval);
+Rvol = zeros(Neval);
+Rvol[1] = 1;
+totnew = zeros(Neval);
+Rtotnew = zeros(Neval);
+Shannon = zeros(Neval);
+Simpson = zeros(Neval);
+Simpson[1] = 1;
+pops = zeros(2^alt, Neval); # Total cell number per voxel (space)
+pops[1, 1] = P0;
+popt = Array{Int64}(undef, N, N, N); # All populations cell number per time
+popt[Int64(N/2), Int64(N/2), Int64(N/2)] = P0;
+Vol2 = zeros(Neval);
+start = time();
+
+GrateInit = 1;
+MigrateInit = 10;
+GrateInit, MigrateInit = adjust_grate_migrate(GrateInit, MigrateInit,
+                                MinGrate, MaxGrate, MinMigrate, MaxMigrate)
+const Grate = GrateInit;
+const Migrate = MigrateInit;
+const Drate = rand(Uniform(MinDrate, MaxDrate));
+const Mutrate = rand(Uniform(MinMutrate, MaxMutrate));
 
 io = open("files/Params.txt", "w");
 write(io,"$Grate $Drate $Mutrate $Migrate\n")
 close(io);
-
-# Set all weights (slightly tuned)
-Gweight = [0.32, 0.28, 0.25];
-Dweight = [-0.15, -0.05, -0.45];
-Mutweight = [0.18, 0.18, 0.32];
-Migweight = [0.65, 0.05, 0.05];
 
 # Create weights for surrounding voxels (Moore neighbourhood)
 c = 0;
@@ -232,7 +255,6 @@ for t in 1:Nstep
         global start = time();
     end
 end
-
 
 # Store tracking variables into files in `files` subfolder
 dir_to_save = joinpath(@__DIR__, "files/")
