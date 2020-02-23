@@ -54,9 +54,9 @@ const Migrate = MigrateInit;
 const Drate = rand(Uniform(MinDrate, MaxDrate));
 const Mutrate = rand(Uniform(MinMutrate, MaxMutrate));
 
-io = open("files/Params.txt", "w");
-write(io,"$Grate $Drate $Mutrate $Migrate\n")
-close(io);
+open("files/Params.txt", "w") do file
+    println(file, Grate, " ", Drate, " ", Mutrate, " ", Migrate);
+end
 
 # Create weights for surrounding voxels (Moore neighbourhood)
 c = 0;
@@ -213,7 +213,7 @@ for t in 1:Nstep
         for e = 1:2^alt
             if pops[e, evalstep + 1] > 0
                 Shannon[evalstep + 1] = Shannon[evalstep + 1] -
-                (pops[e,evalstep + 1]/totpop[evalstep + 1]) *
+                (pops[e,evalstep + 1] / totpop[evalstep + 1]) *
                 log(pops[e,evalstep + 1] / totpop[evalstep + 1]);
                 Simpson[evalstep + 1] = Simpson[evalstep + 1] +
                 (pops[e, evalstep + 1] / totpop[evalstep + 1])^2;
@@ -222,23 +222,19 @@ for t in 1:Nstep
         dir_to_save = joinpath(@__DIR__, "files/")
         filename = joinpath(dir_to_save, string("Gen_space_", string(Int64(t)),
         ".txt"));
-        open(filename, "w") do f
+        open(filename, "w") do file
             for i in 1:N
                 for j in 1:N
                     for k in 1:N
                         if sum(G[i, j, k, :]) > 0
                             global G;
-                            wpop1 = G[i, j, k, 1];
-                            wpop2 = G[i, j, k, 2];
-                            wpop3 = G[i, j, k, 3];
-                            wpop4 = G[i, j, k, 4];
-                            wpop5 = G[i, j, k, 5];
-                            wpop6 = G[i, j, k, 6];
-                            wpop7 = G[i, j, k, 7];
-                            wpop8 = G[i, j, k, 8];
+                            wpop = G[i, j, k, :];
                             actF = Act[i, j, k];
                             necF = Nec[i, j, k];
-                            write(f, "$i $j $k $wpop1 $wpop2 $wpop3 $wpop4 $wpop5 $wpop6 $wpop7 $wpop8 $actF $necF\n");
+                            println(file, i, " ", j, " ", k, " ", wpop[1], " ",
+                            wpop[2], " ", wpop[3], " ", wpop[4], " ", wpop[5],
+                            " ", wpop[6], " ", wpop[7], " ", wpop[8], " ",
+                            actF, " ", necF);
                         end
                     end
                 end
