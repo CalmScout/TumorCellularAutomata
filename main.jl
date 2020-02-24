@@ -1,7 +1,6 @@
 # Will come in handy to random sample from binomial distributions
 using Distributions
 using Random
-using DelimitedFiles
 
 # import predefined constants / parameters
 include("constants.jl")
@@ -183,13 +182,4 @@ for t in 1:Nstep
 end
 
 # Store tracking variables into files in `files` subfolder
-dir_to_save = joinpath(@__DIR__, "files/")
-writedlm(joinpath(dir_to_save, "Totpop.txt"), m.totpop)
-writedlm(joinpath(dir_to_save, "Totnec.txt"), m.totnec)
-writedlm(joinpath(dir_to_save, "VolPET.txt"), m.vol)
-writedlm(joinpath(dir_to_save, "Vol_real.txt"), m.Rvol)
-writedlm(joinpath(dir_to_save, "ActPET.txt"), m.totnew)
-writedlm(joinpath(dir_to_save, "Act_real.txt"), m.Rtotnew)
-writedlm(joinpath(dir_to_save, "Shannon.txt"), m.Shannon)
-writedlm(joinpath(dir_to_save, "Simpson.txt"), m.Simpson)
-writedlm(joinpath(dir_to_save, "Genspop.txt"), m.pops)
+monitor2files(m, "files/")

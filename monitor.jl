@@ -1,3 +1,5 @@
+using DelimitedFiles
+
 mutable struct Monitor
     totpop::Array{Float64, 1}
     totnec::Array{Float64, 1}
@@ -66,4 +68,17 @@ function update_monitor_stats!(m::Monitor, evalstep::Int64,
             (m.pops[e, evalstep + 1] / m.totpop[evalstep + 1])^2
         end
     end
+end
+
+function monitor2files(m::Monitor, subfolder="files/")
+    dir_to_save = joinpath(@__DIR__, subfolder)
+    writedlm(joinpath(dir_to_save, "Totpop.txt"), m.totpop)
+    writedlm(joinpath(dir_to_save, "Totnec.txt"), m.totnec)
+    writedlm(joinpath(dir_to_save, "VolPET.txt"), m.vol)
+    writedlm(joinpath(dir_to_save, "Vol_real.txt"), m.Rvol)
+    writedlm(joinpath(dir_to_save, "ActPET.txt"), m.totnew)
+    writedlm(joinpath(dir_to_save, "Act_real.txt"), m.Rtotnew)
+    writedlm(joinpath(dir_to_save, "Shannon.txt"), m.Shannon)
+    writedlm(joinpath(dir_to_save, "Simpson.txt"), m.Simpson)
+    writedlm(joinpath(dir_to_save, "Genspop.txt"), m.pops)
 end
