@@ -4,6 +4,7 @@
 """
 
 include("monitor.jl")
+include("grid.jl")
 
 function compare_files(path1, path2)
     """
@@ -61,10 +62,10 @@ function decimal2binstr(e)
     return binGb
 end
 
-function reproduction_event(Popgen, Popvox, K, Necvox, Grate, deltat, i, j, k,
+function reproduction_event!(g, Popgen, Popvox, K, Necvox, Grate, deltat, i, j, k,
     e, alt, binGb)
     """
-        Reproduction event.
+        Reproduction event
     """
     grate = Grate*(1-binGb[1]*Gweight[1]-binGb[2]*Gweight[2]-binGb[3]*Gweight[3]);
     Prep = (deltat/grate)*(1-(Popvox+Necvox)/K);
@@ -74,16 +75,16 @@ function reproduction_event(Popgen, Popvox, K, Necvox, Grate, deltat, i, j, k,
     if Prep < 0
         Prep = 0;
     end
-    born = rand(Binomial(Int64(Popgen),Prep));
-    Gnext[i,j,k,e] = Gnext[i,j,k,e] + born;
-    Actnext[i,j,k] = Actnext[i,j,k] + born;
+    born = rand(Binomial(Int64(Popgen), Prep));
+    g.Gnext[i,j,k,e] = g.Gnext[i,j,k,e] + born;
+    g.Actnext[i,j,k] = g.Actnext[i,j,k] + born;
     return born
 end
 
-function death_event(Drate, binGb, Dweight, deltat, Popvox, Necvox, K, Popgen,
+function death_event!(g::Grid, Drate, binGb, Dweight, deltat, Popvox, Necvox, K, Popgen,
     i, j, k, e)
     """
-        Death event.
+        Death event
     """
     drate = Drate*(1-binGb[1]*Dweight[1]-binGb[2]*Dweight[2]-binGb[3]*Dweight[3]);
     Pkill = (deltat/drate)*(Popvox+Necvox)/K;
@@ -93,15 +94,15 @@ function death_event(Drate, binGb, Dweight, deltat, Popvox, Necvox, K, Popgen,
     if Pkill < 0
         Pkill = 0;
     end
-    dead = rand(Binomial(Int64(Popgen),Pkill));
-    Gnext[i,j,k,e] = Gnext[i,j,k,e] - dead;
-    Necnext[i,j,k] = Necnext[i,j,k] + dead;
+    dead = rand(Binomial(Int64(Popgen), Pkill));
+    g.Gnext[i, j, k, e] = g.Gnext[i, j, k, e] - dead;
+    g.Necnext[i, j, k] = g.Necnext[i, j, k] + dead;
     return dead
 end
 
-function migration_event(Migrate, binGb, Migweight, deltat, Popvox, Popgen, Necvox, K, i, j, k, e)
+function migration_event!(g::Grid, Migrate, binGb, Migweight, deltat, Popvox, Popgen, Necvox, K, i, j, k, e)
     """
-        Migration event.
+        Migration event
     """
     migrate = Migrate*(1-binGb[1]*Migweight[1]-binGb[2]*Migweight[2]-binGb[3]*Migweight[3]);
     Pmig = (deltat/migrate)*(Popvox+Necvox)/K;
@@ -127,15 +128,15 @@ function migration_event(Migrate, binGb, Migweight, deltat, Popvox, Popgen, Necv
                 zmov = k+movk;
                 if xmov < N+1 && ymov < N+1 && zmov < N+1 && xmov > 0 && ymov > 0 && zmov > 0 && abs(movi)+abs(movj)+abs(movk)!=0
                     neigh = neigh + 1;
-                    Gnext[xmov,ymov,zmov,e] = Gnext[xmov,ymov,zmov,e] + gone[neigh];
-                    Gnext[i,j,k,e] = Gnext[i,j,k,e] - gone[neigh];
+                    g.Gnext[xmov, ymov, zmov, e] = g.Gnext[xmov, ymov, zmov, e] + gone[neigh];
+                    g.Gnext[i, j, k, e] = g.Gnext[i, j, k, e] - gone[neigh];
                 end
             end
         end
     end
 end
 
-function mutation_event(Mutrate, binGb, Mutweight, deltat, Popgen, K)
+function mutation_event!(g::Grid, Mutrate, binGb, Mutweight, deltat, Popgen, K)
     """
         Mutation event.
     """
@@ -161,8 +162,8 @@ function mutation_event(Mutrate, binGb, Mutweight, deltat, Popgen, K)
 
         # Code below retrieves back decimal number from binary string
         decG = parse(Int, binGc, base=2)+1;
-        Gnext[i,j,k,e] = Gnext[i,j,k,e] - 1;
-        Gnext[i,j,k,decG] = Gnext[i,j,k,decG] + 1;
+        g.Gnext[i, j, k, e] = g.Gnext[i, j, k, e] - 1;
+        g.Gnext[i, j, k, decG] = g.Gnext[i, j, k, decG] + 1;
     end
 end
 

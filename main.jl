@@ -6,24 +6,12 @@ using Random
 include("constants.jl")
 # import helper functions
 include("tools.jl")
+# main data structure
+include("grid.jl")
 
 Random.seed!(seedVal)
 
-# Create array of population cells, necrotics, and activity per voxel
-G = zeros(N, N, N, 2^alt)
-Nec = zeros(N, N, N)
-Act = zeros(N, N, N)
-Rho = zeros(N, N, N)
-
-# Assign initial cell number to population 1 at central voxel
-G[Int64(N/2), Int64(N/2), Int64(N/2), 1] = P0
-
-# Create swapping matrix
-Gnext = G
-G2 = G
-Necnext = Nec
-Actnext = Act
-Rhonext = Rho
+g = Grid(N, alt, P0)
 
 # Create monitor variable
 m = Monitor(Neval)
@@ -92,20 +80,13 @@ for t in 1:Nstep
     # t = t + 1;
     # Take care of local scope. Variables updated inside
     # for loop need to be assigned to global scope
-    global G
+
     # global t;
-    global Nec
-    global Act
-    global Rho
-    global Gnext
-    global Necnext
-    global Actnext
-    global Rhonext
+
     global evalstep
     global elapsed
 
     global Occ
-    global G2
     global Gweight
     global Dweight
     global Migweight
@@ -114,64 +95,21 @@ for t in 1:Nstep
     global ROcc
     # global start;
 
-    for l in 1:length(Occ)
-        i = Int(Occ[l][1])
-        j = Int(Occ[l][2])
-        k = Int(Occ[l][3])
+    grid_time_step!(g, m, t, Occ, alt, K, Grate, Drate, Dweight, Migweight,
+        Mutrate, Mutweight, deltat)
 
-        # Reinitialize activity at each time step
-        Act[i,j,k] = 0
-        # Only evaluate voxel if there is at least 1 cell
-        if sum(G[i, j, k, :]) > 0
-            for e in 1:2^alt
-                # Only evaluate population if there is at least 1 cell
-                if G[i, j, k, e] > 0
-                    # receive binary representation
-                    binGb = decimal2binstr(e)
-
-                    # Retrieve voxel info
-                    Popgen = G[i, j, k, e]
-                    Popvox = sum(G[i, j, k, :])
-                    Necvox = Nec[i, j, k]
-
-                    # Reproduction event
-                    born =
-                    reproduction_event(Popgen, Popvox, K, Necvox, Grate,
-                                                deltat, i, j, k, e, alt, binGb)
-
-                    # Death event
-                    dead = death_event(Drate, binGb, Dweight, deltat,
-                                Popvox, Necvox, K, Popgen, i, j, k, e)
-
-                    # Migration event
-                    migration_event(Migrate, binGb, Migweight, deltat,
-                                    Popvox, Popgen, Necvox, K, i, j, k, e)
-
-                    # Mutation event
-                    mutation_event(Mutrate, binGb, Mutweight, deltat, Popgen, K)
-                end
-            end
-
-            # Housekeeping
-            if t % round(Nstep / Neval) == 0
-                update_monitor_populations!(m, evalstep, G, Nec, Act, i, j, k,
-                 threshold)
-            end
-        end
-    end
-
-    G = Gnext
-    Nec = Necnext
-    Act = Actnext
-    Rho = Rhonext
-    G2 = sum(G, dims = 4)
-    m.popt = G2[:, :, :, 1] + Nec
+    g.G = g.Gnext
+    g.Nec = g.Necnext
+    g.Act = g.Actnext
+    g.Rho = g.Rhonext
+    g.G2 = sum(g.G, dims = 4)
+    m.popt = g.G2[:, :, :, 1] + g.Nec
 
     Occ = findall(x -> x > 0, m.popt)
     # Housekeeping
     if t % round(Nstep / Neval) == 0
         update_monitor_stats!(m, evalstep, threshold)
-        save_gen_space(G, Act, Nec, t, N, "files/")
+        save_gen_space(g.G, g.Act, g.Nec, t, N, "files/")
 
         elapsed = elapsed + time() - start
         print_curr_stats(m, t, elapsed, evalstep)
