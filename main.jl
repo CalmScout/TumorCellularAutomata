@@ -26,25 +26,12 @@ Necnext = Nec
 Actnext = Act
 Rhonext = Rho
 
-# Create monitor variables
-totpop = zeros(Neval)
-totpop[1] = P0
-totnec = zeros(Neval)
-vol = zeros(Neval)
-Rvol = zeros(Neval)
-Rvol[1] = 1
-totnew = zeros(Neval)
-Rtotnew = zeros(Neval)
-Shannon = zeros(Neval)
-Simpson = zeros(Neval)
-Simpson[1] = 1
-pops = zeros(2^alt, Neval) # Total cell number per voxel (space)
-pops[1, 1] = P0
-popt = Array{Int64}(undef, N, N, N) # All populations cell number per time
-popt[Int64(N/2), Int64(N/2), Int64(N/2)] = P0
-Vol2 = zeros(Neval)
+# Create monitor variable
+m = Monitor(Neval)
+
 start = time()
 
+# `Grate`, `Migrate` creation
 GrateInit = 1
 MigrateInit = 10
 GrateInit, MigrateInit = adjust_grate_migrate(GrateInit, MigrateInit,
@@ -117,16 +104,7 @@ for t in 1:Nstep
     global Rhonext
     global evalstep
     global elapsed
-    global totpop
-    global totnec
-    global vol
-    global Rvol
-    global totnew
-    global Rtotnew
-    global Shannon
-    global Simpson
-    global pops
-    global popt
+
     global Occ
     global G2
     global Gweight
@@ -134,7 +112,6 @@ for t in 1:Nstep
     global Migweight
     global Mutweight
     global wcube
-    global Vol2
     global ROcc
     # global start;
 
@@ -178,19 +155,8 @@ for t in 1:Nstep
 
             # Housekeeping
             if t % round(Nstep / Neval) == 0
-                totpop[evalstep + 1] = totpop[evalstep + 1] + sum(G[i, j, k, :])
-                totnec[evalstep + 1] = totnec[evalstep + 1] + sum(Nec[i, j, k])
-                Rtotnew[evalstep + 1] = Rtotnew[evalstep + 1] + sum(Act[i, j, k])
-                Rvol[evalstep + 1] = Rvol[evalstep + 1] + 1
-
-                for e = 1 : 2^alt
-                    pops[e, evalstep + 1] = pops[e, evalstep + 1] + G[i, j, k, e]
-                end
-
-                if sum(G[i, j, k, :]) > threshold
-                    totnew[evalstep + 1] = totnew[evalstep + 1] + sum(Act[i, j, k])
-                    vol[evalstep + 1] = vol[evalstep + 1] + 1
-                end
+                update_monitor_populations!(m, evalstep, G, Nec, Act, i, j, k,
+                 threshold)
             end
         end
     end
@@ -200,47 +166,34 @@ for t in 1:Nstep
     Act = Actnext
     Rho = Rhonext
     G2 = sum(G, dims = 4)
-    popt = G2[:, :, :, 1] + Nec
+    m.popt = G2[:, :, :, 1] + Nec
 
-    Occ = findall(x -> x > 0, popt)
+    Occ = findall(x -> x > 0, m.popt)
     # Housekeeping
     if t % round(Nstep / Neval) == 0
-        Shannon[evalstep + 1] = 0
-        Simpson[evalstep + 1] = 0
-        ROcc =  findall(x -> x > threshold, popt)
-        Vol2[evalstep + 1] = size(ROcc, 1)
-        ROcc = []
-        for e = 1 : 2^alt
-            if pops[e, evalstep + 1] > 0
-                Shannon[evalstep + 1] = Shannon[evalstep + 1] -
-                (pops[e, evalstep + 1] / totpop[evalstep + 1]) *
-                log(pops[e, evalstep + 1] / totpop[evalstep + 1])
-                Simpson[evalstep + 1] = Simpson[evalstep + 1] +
-                (pops[e, evalstep + 1] / totpop[evalstep + 1])^2
-            end
-        end
-
+        update_monitor_stats!(m, evalstep, threshold)
         save_gen_space(G, Act, Nec, t, N, "files/")
 
         elapsed = elapsed + time() - start
-        println("Cell no: ", totpop[evalstep + 1], "; Volume: ", Rvol[evalstep +
-        1], "; Activity: ", Rtotnew[evalstep + 1], "; Necrotics: ",
-        totnec[evalstep + 1], "; Het: ", Shannon[evalstep + 1])
-        println("     Volume (alt): ", Vol2[evalstep + 1])
+        println("Cell no: ", m.totpop[evalstep + 1], "; Volume: ", m.Rvol[evalstep +
+        1], "; Activity: ", m.Rtotnew[evalstep + 1], "; Necrotics: ",
+        m.totnec[evalstep + 1], "; Het: ", m.Shannon[evalstep + 1])
+        println("     Volume (alt): ", m.Vol2[evalstep + 1])
         println("Time step: ", t, "; Time elapsed: ", elapsed)
         evalstep = evalstep + 1
+
         global start = time()
     end
 end
 
 # Store tracking variables into files in `files` subfolder
 dir_to_save = joinpath(@__DIR__, "files/")
-writedlm(joinpath(dir_to_save, "Totpop.txt"), totpop)
-writedlm(joinpath(dir_to_save, "Totnec.txt"), totnec)
-writedlm(joinpath(dir_to_save, "VolPET.txt"), vol)
-writedlm(joinpath(dir_to_save, "Vol_real.txt"), Rvol)
-writedlm(joinpath(dir_to_save, "ActPET.txt"), totnew)
-writedlm(joinpath(dir_to_save, "Act_real.txt"), Rtotnew)
-writedlm(joinpath(dir_to_save, "Shannon.txt"), Shannon)
-writedlm(joinpath(dir_to_save, "Simpson.txt"), Simpson)
-writedlm(joinpath(dir_to_save, "Genspop.txt"), pops)
+writedlm(joinpath(dir_to_save, "Totpop.txt"), m.totpop)
+writedlm(joinpath(dir_to_save, "Totnec.txt"), m.totnec)
+writedlm(joinpath(dir_to_save, "VolPET.txt"), m.vol)
+writedlm(joinpath(dir_to_save, "Vol_real.txt"), m.Rvol)
+writedlm(joinpath(dir_to_save, "ActPET.txt"), m.totnew)
+writedlm(joinpath(dir_to_save, "Act_real.txt"), m.Rtotnew)
+writedlm(joinpath(dir_to_save, "Shannon.txt"), m.Shannon)
+writedlm(joinpath(dir_to_save, "Simpson.txt"), m.Simpson)
+writedlm(joinpath(dir_to_save, "Genspop.txt"), m.pops)
