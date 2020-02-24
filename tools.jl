@@ -198,3 +198,11 @@ function save_gen_space(G::Array{Float64,4}, Act::Array{Float64,3},
         end
     end
 end
+
+function print_curr_stats(m::Monitor, t, elapsed, evalstep)
+    println("Cell no: ", m.totpop[evalstep + 1], "; Volume: ", m.Rvol[evalstep +
+    1], "; Activity: ", m.Rtotnew[evalstep + 1], "; Necrotics: ",
+    m.totnec[evalstep + 1], "; Het: ", m.Shannon[evalstep + 1])
+    println("     Volume (alt): ", m.Vol2[evalstep + 1])
+    println("Time step: ", t, "; Time elapsed: ", elapsed)
+end

@@ -175,11 +175,7 @@ for t in 1:Nstep
         save_gen_space(G, Act, Nec, t, N, "files/")
 
         elapsed = elapsed + time() - start
-        println("Cell no: ", m.totpop[evalstep + 1], "; Volume: ", m.Rvol[evalstep +
-        1], "; Activity: ", m.Rtotnew[evalstep + 1], "; Necrotics: ",
-        m.totnec[evalstep + 1], "; Het: ", m.Shannon[evalstep + 1])
-        println("     Volume (alt): ", m.Vol2[evalstep + 1])
-        println("Time step: ", t, "; Time elapsed: ", elapsed)
+        print_curr_stats(m, t, elapsed, evalstep)
         evalstep = evalstep + 1
 
         global start = time()
