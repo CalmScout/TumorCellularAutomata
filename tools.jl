@@ -176,8 +176,7 @@ function adjust_grate_migrate(Grate, Migrate, MinGrate, MaxGrate, MinMigrate,
     Grate, Migrate
 end
 
-function save_gen_space(G::Array{Float64,4}, Act::Array{Float64,3},
-    Nec::Array{Float64,3}, t::Float64, N::Int64, subdir="files/")
+function save_gen_space(g::Grid, t::Float64, N::Int64, subdir="files/")
     dir_to_save = joinpath(@__DIR__, subdir)
     filename = joinpath(dir_to_save, string("Gen_space_",
     string(Int64(floor(t))), ".txt"));
@@ -185,10 +184,10 @@ function save_gen_space(G::Array{Float64,4}, Act::Array{Float64,3},
         for i in 1:N
             for j in 1:N
                 for k in 1:N
-                    if sum(G[i, j, k, :]) > 0
-                        wpop = G[i, j, k, :]
-                        actF = Act[i, j, k]
-                        necF = Nec[i, j, k]
+                    if sum(g.G[i, j, k, :]) > 0
+                        wpop = g.G[i, j, k, :]
+                        actF = g.Act[i, j, k]
+                        necF = g.Nec[i, j, k]
                         println(file, i, " ", j, " ", k, " ", wpop[1], " ",
                         wpop[2], " ", wpop[3], " ", wpop[4], " ", wpop[5],
                         " ", wpop[6], " ", wpop[7], " ", wpop[8], " ",

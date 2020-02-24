@@ -75,3 +75,7 @@ function grid_time_step!(g::Grid, m::Monitor, t, Occ, alt, K, Grate, Drate, Dwei
         end
     end
 end
+
+function grid_update!(g::Grid)
+    
+end

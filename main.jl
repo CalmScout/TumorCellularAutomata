@@ -98,18 +98,14 @@ for t in 1:Nstep
     grid_time_step!(g, m, t, Occ, alt, K, Grate, Drate, Dweight, Migweight,
         Mutrate, Mutweight, deltat)
 
-    g.G = g.Gnext
-    g.Nec = g.Necnext
-    g.Act = g.Actnext
-    g.Rho = g.Rhonext
-    g.G2 = sum(g.G, dims = 4)
+    grid_update!(g)
     m.popt = g.G2[:, :, :, 1] + g.Nec
 
     Occ = findall(x -> x > 0, m.popt)
     # Housekeeping
     if t % round(Nstep / Neval) == 0
         update_monitor_stats!(m, evalstep, threshold)
-        save_gen_space(g.G, g.Act, g.Nec, t, N, "files/")
+        save_gen_space(g, t, N, "files/")
 
         elapsed = elapsed + time() - start
         print_curr_stats(m, t, elapsed, evalstep)
