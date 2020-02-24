@@ -219,27 +219,8 @@ for t in 1:Nstep
                 (pops[e, evalstep + 1] / totpop[evalstep + 1])^2
             end
         end
-        dir_to_save = joinpath(@__DIR__, "files/")
-        filename = joinpath(dir_to_save, string("Gen_space_", string(Int64(t)),
-        ".txt"));
-        open(filename, "w") do file
-            for i in 1:N
-                for j in 1:N
-                    for k in 1:N
-                        if sum(G[i, j, k, :]) > 0
-                            global G;
-                            wpop = G[i, j, k, :]
-                            actF = Act[i, j, k]
-                            necF = Nec[i, j, k]
-                            println(file, i, " ", j, " ", k, " ", wpop[1], " ",
-                            wpop[2], " ", wpop[3], " ", wpop[4], " ", wpop[5],
-                            " ", wpop[6], " ", wpop[7], " ", wpop[8], " ",
-                            actF, " ", necF)
-                        end
-                    end
-                end
-            end
-        end
+
+        save_gen_space(G, Act, Nec, t, N, "files/")
 
         elapsed = elapsed + time() - start
         println("Cell no: ", totpop[evalstep + 1], "; Volume: ", Rvol[evalstep +
