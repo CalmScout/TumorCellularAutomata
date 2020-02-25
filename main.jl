@@ -41,7 +41,7 @@ Drate = c.Drate
 Mutrate = c.Mutrate
 wcube = c.wcube
 #########################################
-g = Grid(N, alt, P0)
+g = Grid(c)
 
 # Create monitor variable
 m = Monitor(Neval)
@@ -80,10 +80,8 @@ for t in 1:Nstep
     global ROcc
     # global start;
 
-    grid_time_step!(g, m, t, Occ, alt, K, Grate, Drate, Dweight, Migweight,
-        Mutrate, Mutweight, deltat)
+    grid_time_step!(g, c, m, t, Occ)
 
-    grid_update!(g)
     m.popt = g.G2[:, :, :, 1] + g.Nec
 
     Occ = findall(x -> x > 0, m.popt)
