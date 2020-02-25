@@ -39,6 +39,7 @@ Grate = c.Grate
 Migrate = c.Migrate
 Drate = c.Drate
 Mutrate = c.Mutrate
+wcube = c.wcube
 #########################################
 g = Grid(N, alt, P0)
 
@@ -49,41 +50,6 @@ start = time()
 
 open("files/Params.txt", "w") do file
     println(file, Grate, " ", Drate, " ", Mutrate, " ", Migrate)
-end
-
-# Create weights for surrounding voxels (Moore neighbourhood)
-c = 0
-wcube = zeros(26)
-sumcube = 0
-
-for i in [-1, 0, 1]
-    for j in [-1, 0, 1]
-        for k in [-1, 0, 1]
-            global c
-            global wcube
-            global sumcube
-            if abs(i) + abs(j) + abs(k) != 0
-                c = c + 1
-                wcube[c] = 1 / sqrt(abs(i) + abs(j) + abs(k))
-                sumcube = sumcube + wcube[c]
-            end
-        end
-    end
-end
-
-c = 0
-for i in [-1, 0, 1]
-    for j in [-1, 0, 1]
-        for k in [-1, 0, 1]
-            global c
-            global wcube
-            global sumcube
-            if abs(i) + abs(j) + abs(k) != 0
-                c = c + 1
-                wcube[c] = wcube[c] / sumcube
-            end
-        end
-    end
 end
 
 # Let the system evolve

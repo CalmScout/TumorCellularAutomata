@@ -34,6 +34,7 @@ struct Constants
     Migrate::Float64
     Drate::Float64
     Mutrate::Float64
+    wcube::Array{Float64, 1}
 
     function Constants()
         deltat = 4
@@ -67,10 +68,39 @@ struct Constants
         Drate = rand(Uniform(MinDrate, MaxDrate))
         Mutrate = rand(Uniform(MinMutrate, MaxMutrate))
 
+        # Create weights for surrounding voxels (Moore neighbourhood)
+        c_old = 0
+        wcube = zeros(26)
+        sumcube = 0
+
+        for i in [-1, 0, 1]
+            for j in [-1, 0, 1]
+                for k in [-1, 0, 1]
+                    if abs(i) + abs(j) + abs(k) != 0
+                        c_old = c_old + 1
+                        wcube[c_old] = 1 / sqrt(abs(i) + abs(j) + abs(k))
+                        sumcube = sumcube + wcube[c_old]
+                    end
+                end
+            end
+        end
+
+        c_old = 0
+        for i in [-1, 0, 1]
+            for j in [-1, 0, 1]
+                for k in [-1, 0, 1]
+                    if abs(i) + abs(j) + abs(k) != 0
+                        c_old = c_old + 1
+                        wcube[c_old] = wcube[c_old] / sumcube
+                    end
+                end
+            end
+        end
+
         new(deltat, tspan, Nstep, alt, N, P0, K, Neval, threshold, MinGrate,
         MaxGrate, MinDrate, MaxDrate, MinMutrate, MaxMutrate, MinMigrate,
         MaxMigrate, Gweight, Dweight, Mutweight, Migweight, Grate, Migrate,
-        Drate, Mutrate)
+        Drate, Mutrate, wcube)
     end
 end
 
