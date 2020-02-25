@@ -70,8 +70,8 @@ function grid_time_step!(g::Grid, c::Constants, m::Monitor, t, Occ)
 
             # Housekeeping
             if t % round(c.Nstep / c.Neval) == 0
-                update_monitor_populations!(m, evalstep, g.G, g.Nec, g.Act, i,
-                    j, k, c.threshold)
+                update_monitor_populations!(m, c, evalstep, g.G, g.Nec, g.Act, i,
+                    j, k)
             end
         end
     end

@@ -13,54 +13,26 @@ const seedVal = 42
 Random.seed!(seedVal)
 
 c = Constants()
-###########################################
-deltat = c.deltat
-tspan = c.tspan
-Nstep = c.Nstep
-alt = c.alt
-N = c.N
-P0 = c.P0
-K = c.K
-Neval = c.Neval
-threshold = c.threshold
-MinGrate = c.MinGrate
-MaxGrate = c.MaxGrate
-MinDrate = c.MinDrate
-MaxDrate = c.MaxDrate
-MinMutrate = c.MinMutrate
-MaxMutrate = c.MaxMutrate
-MinMigrate = c.MinMigrate
-MaxMigrate = c.MaxMigrate
-Gweight = c.Gweight
-Dweight = c.Dweight
-Mutweight = c.Mutweight
-Migweight = c.Migweight
-Grate = c.Grate
-Migrate = c.Migrate
-Drate = c.Drate
-Mutrate = c.Mutrate
-wcube = c.wcube
-#########################################
 g = Grid(c)
 
 # Create monitor variable
-m = Monitor(Neval)
+m = Monitor(c)
 
 start = time()
 
 open("files/Params.txt", "w") do file
-    println(file, Grate, " ", Drate, " ", Mutrate, " ", Migrate)
+    println(file, c.Grate, " ", c.Drate, " ", c.Mutrate, " ", c.Migrate)
 end
 
 # Let the system evolve
 elapsed = 0
 evalstep = 1
 voxPop = 0
-Occ = [CartesianIndex(Int(N/2), Int(N/2), Int(N/2))]
-ROcc = [CartesianIndex(Int(N/2), Int(N/2), Int(N/2))]
+Occ = [CartesianIndex(Int(c.N / 2), Int(c.N / 2), Int(c.N / 2))]
+ROcc = [CartesianIndex(Int(c.N / 2), Int(c.N / 2), Int(c.N / 2))]
 # t = 0
 
-for t in 1:Nstep
+for t in 1:c.Nstep
 # @time while Vol2[evalstep] < 100000
     # t = t + 1;
     # Take care of local scope. Variables updated inside
@@ -86,9 +58,9 @@ for t in 1:Nstep
 
     Occ = findall(x -> x > 0, m.popt)
     # Housekeeping
-    if t % round(Nstep / Neval) == 0
-        update_monitor_stats!(m, evalstep, threshold)
-        save_gen_space(g, t, N, "files/")
+    if t % round(c.Nstep / c.Neval) == 0
+        update_monitor_stats!(m, c, evalstep)
+        save_gen_space(g, t, c.N, "files/")
 
         elapsed = elapsed + time() - start
         print_curr_stats(m, t, elapsed, evalstep)
