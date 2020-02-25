@@ -167,15 +167,6 @@ function mutation_event!(g::Grid, Mutrate, binGb, Mutweight, deltat, Popgen, K)
     end
 end
 
-function adjust_grate_migrate(Grate, Migrate, MinGrate, MaxGrate, MinMigrate,
-    MaxMigrate)
-    while Grate / Migrate < 0.25 || Migrate / Grate < 0.1
-        Grate = rand(Uniform(MinGrate, MaxGrate));
-        Migrate = rand(Uniform(MinMigrate, MaxMigrate));
-    end
-    Grate, Migrate
-end
-
 function save_gen_space(g::Grid, t::Float64, N::Int64, subdir="files/")
     dir_to_save = joinpath(@__DIR__, subdir)
     filename = joinpath(dir_to_save, string("Gen_space_",

@@ -13,6 +13,7 @@ const seedVal = 42
 Random.seed!(seedVal)
 
 c = Constants()
+###########################################
 deltat = c.deltat
 tspan = c.tspan
 Nstep = c.Nstep
@@ -34,23 +35,17 @@ Gweight = c.Gweight
 Dweight = c.Dweight
 Mutweight = c.Mutweight
 Migweight = c.Migweight
-
+Grate = c.Grate
+Migrate = c.Migrate
+Drate = c.Drate
+Mutrate = c.Mutrate
+#########################################
 g = Grid(N, alt, P0)
 
 # Create monitor variable
 m = Monitor(Neval)
 
 start = time()
-
-# `Grate`, `Migrate` creation
-GrateInit = 1
-MigrateInit = 10
-GrateInit, MigrateInit = adjust_grate_migrate(GrateInit, MigrateInit,
-                                MinGrate, MaxGrate, MinMigrate, MaxMigrate)
-const Grate = GrateInit
-const Migrate = MigrateInit
-const Drate = rand(Uniform(MinDrate, MaxDrate))
-const Mutrate = rand(Uniform(MinMutrate, MaxMutrate))
 
 open("files/Params.txt", "w") do file
     println(file, Grate, " ", Drate, " ", Mutrate, " ", Migrate)

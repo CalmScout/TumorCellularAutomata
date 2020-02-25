@@ -1,6 +1,7 @@
 """
     Contains constants / initial conditions of simulation.
 """
+
 struct Constants
     # Set time of simulation
     deltat::Int64 # hours
@@ -29,6 +30,10 @@ struct Constants
     Dweight::Array{Float64, 1}
     Mutweight::Array{Float64, 1}
     Migweight::Array{Float64, 1}
+    Grate::Float64
+    Migrate::Float64
+    Drate::Float64
+    Mutrate::Float64
 
     function Constants()
         deltat = 4
@@ -54,9 +59,26 @@ struct Constants
         Dweight = [-0.15, -0.05, -0.45]
         Mutweight = [0.18, 0.18, 0.32]
         Migweight = [0.65, 0.05, 0.05]
+        # `Grate`, `Migrate` creation
+        Grate = 1
+        Migrate = 10
+        Grate, Migrate = adjust_grate_migrate(Grate, Migrate,
+                                        MinGrate, MaxGrate, MinMigrate, MaxMigrate)
+        Drate = rand(Uniform(MinDrate, MaxDrate))
+        Mutrate = rand(Uniform(MinMutrate, MaxMutrate))
 
         new(deltat, tspan, Nstep, alt, N, P0, K, Neval, threshold, MinGrate,
         MaxGrate, MinDrate, MaxDrate, MinMutrate, MaxMutrate, MinMigrate,
-        MaxMigrate, Gweight, Dweight, Mutweight, Migweight)
+        MaxMigrate, Gweight, Dweight, Mutweight, Migweight, Grate, Migrate,
+        Drate, Mutrate)
     end
+end
+
+function adjust_grate_migrate(Grate, Migrate, MinGrate, MaxGrate, MinMigrate,
+    MaxMigrate)
+    while Grate / Migrate < 0.25 || Migrate / Grate < 0.1
+        Grate = rand(Uniform(MinGrate, MaxGrate));
+        Migrate = rand(Uniform(MinMigrate, MaxMigrate));
+    end
+    Grate, Migrate
 end
