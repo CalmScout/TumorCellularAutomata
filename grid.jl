@@ -86,7 +86,7 @@ function reproduction_event!(g::Grid, c::Constants, Popgen, Popvox, Necvox, i,
     """
         Reproduction event
     """
-    grate = c.Grate*(1-binGb[1]*c.Gweight[1]-binGb[2]*c.Gweight[2]-binGb[3]*c.Gweight[3])
+    grate = c.Grate * (1 - binGb' * c.Gweight)
     Prep = (c.deltat / grate)*(1-(Popvox + Necvox) / c.K)
     Prep = normalize_prob(Prep)
     born = rand(Binomial(Int64(Popgen), Prep));
@@ -100,7 +100,7 @@ function death_event!(g::Grid, c::Constants, binGb, Popvox, Necvox, Popgen,
     """
         Death event
     """
-    drate = c.Drate*(1-binGb[1]*c.Dweight[1]-binGb[2]*c.Dweight[2]-binGb[3]*c.Dweight[3])
+    drate = c.Drate * (1 - binGb' * c.Dweight)
     Pkill = c.deltat / drate * (Popvox + Necvox) / c.K
     Pkill = normalize_prob(Pkill)
     dead = rand(Binomial(Int64(Popgen), Pkill));
@@ -114,10 +114,10 @@ function migration_event!(g::Grid, c::Constants, binGb, Popvox, Popgen, Necvox,
     """
         Migration event
     """
-    migrate = c.Migrate*(1-binGb[1]*c.Migweight[1]-binGb[2]*c.Migweight[2]-binGb[3]*c.Migweight[3]);
-    Pmig = (c.deltat / migrate) * (Popvox + Necvox) / c.K;
+    migrate = c.Migrate * (1 - binGb' * c.Migweight)
+    Pmig = c.deltat / migrate * (Popvox + Necvox) / c.K
     Pmig = normalize_prob(Pmig)
-    migrants = rand(Binomial(Int64(Popgen),Pmig));
+    migrants = rand(Binomial(Int64(Popgen),Pmig))
     neigh = 0
     moore = 26
     vonN = 6
@@ -144,17 +144,17 @@ function mutation_event!(g::Grid, c::Constants, binGb, Popgen)
     """
         Mutation event.
     """
-    mutrate = c.Mutrate*(1-binGb[1]*c.Mutweight[1]-binGb[2]*c.Mutweight[2]-binGb[3]*c.Mutweight[3])
-    Pmut = (c.deltat / mutrate)*(Popgen / c.K)
+    mutrate = c.Mutrate * (1 - binGb' * c.Mutweight)
+    Pmut = c.deltat / mutrate * (Popgen / c.K)
     Pmut = normalize_prob(Pmut)
-    r = rand(1);
-    r = r[1];
+    r = rand(1)
+    r = r[1]
     if r < Pmut && e != 2^alt
         # Pick a random empty slot and turn it to mutated
-        nonalter = findall(x -> x < 1, binGb);
-        r2 = rand(1:length(nonalter));
-        mutating = nonalter[r2];
-        binGb[mutating] = 1;
+        nonalter = findall(x -> x < 1, binGb)
+        r2 = rand(1:length(nonalter))
+        mutating = nonalter[r2]
+        binGb[mutating] = 1
 
         # Switch binary array back to binary string
         binGc = string(Int(binGb[1]),Int(binGb[2]),Int(binGb[3]));
