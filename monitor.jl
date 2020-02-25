@@ -14,6 +14,10 @@ mutable struct Monitor
     pops::Array{Float64, 2}     # Total cell number per voxel (space)
     popt::Array{Int64, 3}       # All populations cell number per time
     Vol2::Array{Float64, 1}
+    elapsed::Float64
+    evalstep::Int64
+    voxPop::Int64
+
     function Monitor(c::Constants)
         Neval = c.Neval
         N = c.N
@@ -34,43 +38,49 @@ mutable struct Monitor
         popt = Array{Int64}(undef, N, N, N) # All populations cell number per time
         popt[Int64(N / 2), Int64(N / 2), Int64(N / 2)] = c.P0
         Vol2 = zeros(Neval)
+        # Parameters of evolving system
+        elapsed = 0
+        evalstep = 1
+        voxPop = 0
         new(totpop, totnec, vol, Rvol, totnew, Rtotnew, Shannon, Simpson, pops,
-            popt, Vol2)
+            popt, Vol2, elapsed, evalstep, voxPop)
     end
 end
 
-function update_monitor_populations!(m::Monitor, c::Constants, evalstep::Int64,
-    G, Nec, Act, i::Int64, j::Int64, k::Int64)
-    m.totpop[evalstep + 1] = m.totpop[evalstep + 1] + sum(G[i, j, k, :])
-    m.totnec[evalstep + 1] = m.totnec[evalstep + 1] + sum(Nec[i, j, k])
-    m.Rtotnew[evalstep + 1] = m.Rtotnew[evalstep + 1] + sum(Act[i, j, k])
-    m.Rvol[evalstep + 1] = m.Rvol[evalstep + 1] + 1
+function update_monitor_populations!(m::Monitor, c::Constants, G, Nec, Act,
+    i::Int64, j::Int64, k::Int64)
+    m.totpop[m.evalstep + 1] = m.totpop[m.evalstep + 1] + sum(G[i, j, k, :])
+    m.totnec[m.evalstep + 1] = m.totnec[m.evalstep + 1] + sum(Nec[i, j, k])
+    m.Rtotnew[m.evalstep + 1] = m.Rtotnew[m.evalstep + 1] + sum(Act[i, j, k])
+    m.Rvol[m.evalstep + 1] = m.Rvol[m.evalstep + 1] + 1
 
     for e = 1 : 2^c.alt
-        m.pops[e, evalstep + 1] = m.pops[e, evalstep + 1] + G[i, j, k, e]
+        m.pops[e, m.evalstep + 1] = m.pops[e, m.evalstep + 1] + G[i, j, k, e]
     end
 
     if sum(G[i, j, k, :]) > c.threshold
-        m.totnew[evalstep + 1] = m.totnew[evalstep + 1] + sum(Act[i, j, k])
-        m.vol[evalstep + 1] = m.vol[evalstep + 1] + 1
+        m.totnew[m.evalstep + 1] = m.totnew[m.evalstep + 1] + sum(Act[i, j, k])
+        m.vol[m.evalstep + 1] = m.vol[m.evalstep + 1] + 1
     end
 end
 
-function update_monitor_stats!(m::Monitor, c::Constants, evalstep::Int64)
-    m.Shannon[evalstep + 1] = 0
-    m.Simpson[evalstep + 1] = 0
+function update_monitor_stats!(m::Monitor, c::Constants)
+    m.Shannon[m.evalstep + 1] = 0
+    m.Simpson[m.evalstep + 1] = 0
     ROcc =  findall(x -> x > c.threshold, m.popt)
-    m.Vol2[evalstep + 1] = size(ROcc, 1)
+    m.Vol2[m.evalstep + 1] = size(ROcc, 1)
     ROcc = []
     for e = 1 : 2^c.alt
-        if m.pops[e, evalstep + 1] > 0
-            m.Shannon[evalstep + 1] = m.Shannon[evalstep + 1] -
-            (m.pops[e, evalstep + 1] / m.totpop[evalstep + 1]) *
-            log(m.pops[e, evalstep + 1] / m.totpop[evalstep + 1])
-            m.Simpson[evalstep + 1] = m.Simpson[evalstep + 1] +
-            (m.pops[e, evalstep + 1] / m.totpop[evalstep + 1])^2
+        if m.pops[e, m.evalstep + 1] > 0
+            m.Shannon[m.evalstep + 1] = m.Shannon[m.evalstep + 1] -
+            (m.pops[e, m.evalstep + 1] / m.totpop[m.evalstep + 1]) *
+            log(m.pops[e, m.evalstep + 1] / m.totpop[m.evalstep + 1])
+            m.Simpson[m.evalstep + 1] = m.Simpson[m.evalstep + 1] +
+            (m.pops[e, m.evalstep + 1] / m.totpop[m.evalstep + 1])^2
         end
     end
+    m.elapsed = m.elapsed + time() - start
+    m.evalstep = m.evalstep + 1
 end
 
 function monitor2files(m::Monitor, subfolder="files/")

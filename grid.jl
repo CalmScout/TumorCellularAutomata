@@ -10,6 +10,8 @@ mutable struct Grid
     Necnext::Array{Float64, 3}
     Actnext::Array{Float64, 3}
     Rhonext::Array{Float64, 3}
+    Occ::Array{CartesianIndex{3}, 1}
+    ROcc::Array{CartesianIndex{3}, 1}
 
     function Grid(c::Constants)
         # Create array of population cells, necrotics, and activity per voxel
@@ -25,15 +27,17 @@ mutable struct Grid
         Necnext = Nec
         Actnext = Act
         Rhonext = Rho
-        new(G, Nec, Act, Rho, Gnext, G2, Necnext, Actnext, Rhonext)
+        Occ = [CartesianIndex(Int(c.N / 2), Int(c.N / 2), Int(c.N / 2))]
+        ROcc = [CartesianIndex(Int(c.N / 2), Int(c.N / 2), Int(c.N / 2))]
+        new(G, Nec, Act, Rho, Gnext, G2, Necnext, Actnext, Rhonext, Occ, ROcc)
     end
 end
 
-function grid_time_step!(g::Grid, c::Constants, m::Monitor, t, Occ)
-    for l in 1:length(Occ)
-        i = Int(Occ[l][1])
-        j = Int(Occ[l][2])
-        k = Int(Occ[l][3])
+function grid_time_step!(g::Grid, c::Constants, m::Monitor, t)
+    for l in 1:length(g.Occ)
+        i = Int(g.Occ[l][1])
+        j = Int(g.Occ[l][2])
+        k = Int(g.Occ[l][3])
 
         # Reinitialize activity at each time step
         g.Act[i, j, k] = 0
@@ -70,11 +74,13 @@ function grid_time_step!(g::Grid, c::Constants, m::Monitor, t, Occ)
 
             # Housekeeping
             if t % round(c.Nstep / c.Neval) == 0
-                update_monitor_populations!(m, c, evalstep, g.G, g.Nec, g.Act, i,
+                update_monitor_populations!(m, c, g.G, g.Nec, g.Act, i,
                     j, k)
             end
         end
     end
+    m.popt = g.G2[:, :, :, 1] + g.Nec
+    g.Occ = findall(x -> x > 0, m.popt)
 end
 
 function normalize_prob(Prep)
@@ -142,7 +148,7 @@ end
 
 function mutation_event!(g::Grid, c::Constants, binGb, Popgen)
     """
-        Mutation event.
+        Mutation event
     """
     mutrate = c.Mutrate * (1 - binGb' * c.Mutweight)
     Pmut = c.deltat / mutrate * (Popgen / c.K)
@@ -157,11 +163,11 @@ function mutation_event!(g::Grid, c::Constants, binGb, Popgen)
         binGb[mutating] = 1
 
         # Switch binary array back to binary string
-        binGc = string(Int(binGb[1]),Int(binGb[2]),Int(binGb[3]));
+        binGc = string(Int(binGb[1]), Int(binGb[2]), Int(binGb[3]))
 
         # Code below retrieves back decimal number from binary string
-        decG = parse(Int, binGc, base=2)+1;
-        g.Gnext[i, j, k, e] = g.Gnext[i, j, k, e] - 1;
-        g.Gnext[i, j, k, decG] = g.Gnext[i, j, k, decG] + 1;
+        decG = parse(Int, binGc, base=2) + 1
+        g.Gnext[i, j, k, e] = g.Gnext[i, j, k, e] - 1
+        g.Gnext[i, j, k, decG] = g.Gnext[i, j, k, decG] + 1
     end
 end

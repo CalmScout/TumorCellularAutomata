@@ -85,10 +85,10 @@ function save_gen_space(g::Grid, t::Float64, N::Int64, subdir="files/")
     end
 end
 
-function print_curr_stats(m::Monitor, t, elapsed, evalstep)
-    println("Cell no: ", m.totpop[evalstep + 1], "; Volume: ", m.Rvol[evalstep +
-    1], "; Activity: ", m.Rtotnew[evalstep + 1], "; Necrotics: ",
-    m.totnec[evalstep + 1], "; Het: ", m.Shannon[evalstep + 1])
-    println("     Volume (alt): ", m.Vol2[evalstep + 1])
-    println("Time step: ", t, "; Time elapsed: ", elapsed)
+function print_curr_stats(m::Monitor, t)
+    println("Cell no: ", m.totpop[m.evalstep], "; Volume: ", m.Rvol[m.evalstep],
+     "; Activity: ", m.Rtotnew[m.evalstep], "; Necrotics: ",
+    m.totnec[m.evalstep], "; Het: ", m.Shannon[m.evalstep])
+    println("     Volume (alt): ", m.Vol2[m.evalstep])
+    println("Time step: ", t, "; Time elapsed: ", m.elapsed)
 end
