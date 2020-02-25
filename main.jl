@@ -9,7 +9,31 @@ include("tools.jl")
 # main data structure
 include("grid.jl")
 
+const seedVal = 42
 Random.seed!(seedVal)
+
+c = Constants()
+deltat = c.deltat
+tspan = c.tspan
+Nstep = c.Nstep
+alt = c.alt
+N = c.N
+P0 = c.P0
+K = c.K
+Neval = c.Neval
+threshold = c.threshold
+MinGrate = c.MinGrate
+MaxGrate = c.MaxGrate
+MinDrate = c.MinDrate
+MaxDrate = c.MaxDrate
+MinMutrate = c.MinMutrate
+MaxMutrate = c.MaxMutrate
+MinMigrate = c.MinMigrate
+MaxMigrate = c.MaxMigrate
+Gweight = c.Gweight
+Dweight = c.Dweight
+Mutweight = c.Mutweight
+Migweight = c.Migweight
 
 g = Grid(N, alt, P0)
 
