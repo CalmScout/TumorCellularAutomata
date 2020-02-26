@@ -68,7 +68,7 @@ function grid_time_step!(g::Grid, c::Constants, m::Monitor, t)
                     k, e)
 
                     # Mutation event
-                    mutation_event!(g, c, binGb, Popgen)
+                    mutation_event!(g, c, binGb, Popgen, i, j, k, e)
                 end
             end
 
@@ -146,7 +146,7 @@ function migration_event!(g::Grid, c::Constants, binGb, Popvox, Popgen, Necvox,
     end
 end
 
-function mutation_event!(g::Grid, c::Constants, binGb, Popgen)
+function mutation_event!(g::Grid, c::Constants, binGb, Popgen, i, j, k, e)
     """
         Mutation event
     """
@@ -155,7 +155,7 @@ function mutation_event!(g::Grid, c::Constants, binGb, Popgen)
     Pmut = normalize_prob(Pmut)
     r = rand(1)
     r = r[1]
-    if r < Pmut && e != 2^alt
+    if r < Pmut && e != 2^c.alt
         # Pick a random empty slot and turn it to mutated
         nonalter = findall(x -> x < 1, binGb)
         r2 = rand(1:length(nonalter))
