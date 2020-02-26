@@ -35,6 +35,7 @@ struct Constants
     Drate::Float64
     Mutrate::Float64
     wcube::Array{Float64, 1}
+    NstepNevalRatio::Float64
 
     function Constants()
         deltat = 4
@@ -97,10 +98,12 @@ struct Constants
             end
         end
 
+        NstepNevalRatio = round(Nstep / Neval)
+
         new(deltat, tspan, Nstep, alt, N, P0, K, Neval, threshold, MinGrate,
         MaxGrate, MinDrate, MaxDrate, MinMutrate, MaxMutrate, MinMigrate,
         MaxMigrate, Gweight, Dweight, Mutweight, Migweight, Grate, Migrate,
-        Drate, Mutrate, wcube)
+        Drate, Mutrate, wcube, NstepNevalRatio)
     end
 end
 

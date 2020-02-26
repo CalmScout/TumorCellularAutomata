@@ -22,21 +22,14 @@ open("files/Params.txt", "w") do file
     println(file, c.Grate, " ", c.Drate, " ", c.Mutrate, " ", c.Migrate)
 end
 
-# t = 0
-
 for t in 1:c.Nstep
 # @time while Vol2[evalstep] < 100000
-    # t = t + 1;
-    # Take care of local scope. Variables updated inside
-    # for loop need to be assigned to global scope
-
     # global t;
-    # global start;
 
     grid_time_step!(g, c, m, t)
 
     # Housekeeping
-    if t % round(c.Nstep / c.Neval) == 0
+    if t % c.NstepNevalRatio == 0
         update_monitor_stats!(m, c)
         save_gen_space(g, t, c.N, "files/")
         print_curr_stats(m, t)
