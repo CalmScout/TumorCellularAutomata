@@ -18,7 +18,11 @@ m = Monitor(c)
 
 start = time()
 
-open("files/Params.txt", "w") do file
+if !isdir("files/")
+    mkpath(joinpath(@__DIR__, "files/"))
+end
+
+open(joinpath(@__DIR__, "files/Params.txt"), "w") do file
     println(file, c.Grate, " ", c.Drate, " ", c.Mutrate, " ", c.Migrate)
 end
 

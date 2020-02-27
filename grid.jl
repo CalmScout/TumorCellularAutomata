@@ -123,7 +123,7 @@ function migration_event!(g::Grid, c::Constants, binGb, Popvox, Popgen, Necvox,
     migrate = c.Migrate * (1 - binGb' * c.Migweight)
     Pmig = c.deltat / migrate * (Popvox + Necvox) / c.K
     Pmig = normalize_prob(Pmig)
-    migrants = rand(Binomial(Int64(Popgen),Pmig))
+    migrants = rand(Binomial(Int64(Popgen), Pmig))
     neigh = 0
     moore = 26
     vonN = 6

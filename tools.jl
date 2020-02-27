@@ -50,14 +50,14 @@ function decimal2binstr(e)
         Converts decimal number to binary string.
     """
 
-    binG = string(e-1, base=2);     # First of all, we retrieve binary string
+    binG = string(e-1, base=2)     # First of all, we retrieve binary string
     while length.(binG) < 3         # As the string may not be of length 0, we solve this
-        binG = string("0",binG);
+        binG = string("0", binG)
     end
-    binGa = split(binG,"");         # Now we need an array instead of a string
-    binGb = zeros(length(binGa));   # We create a new variable to store int array
+    binGa = split(binG, "")         # Now we need an array instead of a string
+    binGb = zeros(length(binGa))   # We create a new variable to store int array
     for i in 1:length(binGa)        # We convert array elements from char to int
-        binGb[i] = parse(Int,binGa[i]);
+        binGb[i] = parse(Int, binGa[i])
     end
     return binGb
 end
@@ -65,7 +65,7 @@ end
 function save_gen_space(g::Grid, t::Float64, N::Int64, subdir="files/")
     dir_to_save = joinpath(@__DIR__, subdir)
     filename = joinpath(dir_to_save, string("Gen_space_",
-    string(Int64(floor(t))), ".txt"));
+    string(Int64(floor(t))), ".txt"))
     open(filename, "w") do file
         for i in 1:N
             for j in 1:N
