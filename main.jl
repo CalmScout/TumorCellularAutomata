@@ -9,7 +9,7 @@ include("tools.jl")
 # main data structure
 include("grid.jl")
 
-const seedVal = 42
+const seedVal = 3
 Random.seed!(seedVal)
 
 c = Constants()

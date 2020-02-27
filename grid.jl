@@ -69,16 +69,19 @@ function grid_time_step!(g::Grid, c::Constants, m::Monitor, t)
 
                     # Mutation event
                     mutation_event!(g, c, binGb, Popgen, i, j, k, e)
+
                 end
             end
 
-            # Housekeeping
             if t % round(c.Nstep / c.Neval) == 0
                 update_monitor_populations!(m, c, g.G, g.Nec, g.Act, i,
                     j, k)
             end
         end
     end
+
+    g.G2 = sum(g.G, dims = 4)
+
     m.popt = g.G2[:, :, :, 1] + g.Nec
     g.Occ = findall(x -> x > 0, m.popt)
 end
@@ -93,11 +96,11 @@ function reproduction_event!(g::Grid, c::Constants, Popgen, Popvox, Necvox, i,
         Reproduction event
     """
     grate = c.Grate * (1 - binGb' * c.Gweight)
-    Prep = (c.deltat / grate)*(1-(Popvox + Necvox) / c.K)
+    Prep = c.deltat / grate *(1-(Popvox + Necvox) / c.K)
     Prep = normalize_prob(Prep)
-    born = rand(Binomial(Int64(Popgen), Prep));
-    g.Gnext[i,j,k,e] = g.Gnext[i,j,k,e] + born;
-    g.Actnext[i,j,k] = g.Actnext[i,j,k] + born;
+    born = rand(Binomial(Int64(Popgen), Prep))
+    g.Gnext[i, j, k, e] = g.Gnext[i, j, k, e] + born
+    g.Actnext[i, j, k] = g.Actnext[i, j, k] + born
     return born
 end
 
@@ -109,9 +112,9 @@ function death_event!(g::Grid, c::Constants, binGb, Popvox, Necvox, Popgen,
     drate = c.Drate * (1 - binGb' * c.Dweight)
     Pkill = c.deltat / drate * (Popvox + Necvox) / c.K
     Pkill = normalize_prob(Pkill)
-    dead = rand(Binomial(Int64(Popgen), Pkill));
-    g.Gnext[i, j, k, e] = g.Gnext[i, j, k, e] - dead;
-    g.Necnext[i, j, k] = g.Necnext[i, j, k] + dead;
+    dead = rand(Binomial(Int64(Popgen), Pkill))
+    g.Gnext[i, j, k, e] = g.Gnext[i, j, k, e] - dead
+    g.Necnext[i, j, k] = g.Necnext[i, j, k] + dead
     return dead
 end
 
@@ -133,9 +136,9 @@ function migration_event!(g::Grid, c::Constants, binGb, Popvox, Popgen, Necvox,
     for movi in [-1, 0, 1]
         for movj in [-1, 0, 1]
             for movk = [-1, 0, 1]
-                xmov = i + movi;
-                ymov = j + movj;
-                zmov = k + movk;
+                xmov = i + movi
+                ymov = j + movj
+                zmov = k + movk
                 if xmov < N+1 && ymov < N+1 && zmov < N+1 && xmov > 0 && ymov > 0 && zmov > 0 && abs(movi)+abs(movj)+abs(movk)!=0
                     neigh = neigh + 1
                     g.Gnext[xmov, ymov, zmov, e] = g.Gnext[xmov, ymov, zmov, e] + gone[neigh]
