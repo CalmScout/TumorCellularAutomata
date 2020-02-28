@@ -66,7 +66,7 @@ struct Constants
         Grate = 1
         Migrate = 10
         Grate, Migrate = adjust_grate_migrate(Grate, Migrate,
-                                        MinGrate, MaxGrate, MinMigrate, MaxMigrate)
+                                    MinGrate, MaxGrate, MinMigrate, MaxMigrate)
         Drate = rand(Uniform(MinDrate, MaxDrate))
         Mutrate = rand(Uniform(MinMutrate, MaxMutrate))
 
@@ -112,8 +112,8 @@ end
 function adjust_grate_migrate(Grate, Migrate, MinGrate, MaxGrate, MinMigrate,
     MaxMigrate)
     while Grate / Migrate < 0.25 || Migrate / Grate < 0.1
-        Grate = rand(Uniform(MinGrate, MaxGrate));
-        Migrate = rand(Uniform(MinMigrate, MaxMigrate));
+        Grate = rand(Uniform(MinGrate, MaxGrate))
+        Migrate = rand(Uniform(MinMigrate, MaxMigrate))
     end
     Grate, Migrate
 end

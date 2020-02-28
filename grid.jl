@@ -33,7 +33,7 @@ mutable struct Grid
     end
 end
 
-function grid_time_step!(g::Grid, c::Constants, m::Monitor, t)
+function grid_time_step!(g::Grid, c::Constants, m::Monitor, t::Int64)
     for l in 1:length(g.Occ)
         i = Int(g.Occ[l][1])
         j = Int(g.Occ[l][2])
@@ -56,8 +56,8 @@ function grid_time_step!(g::Grid, c::Constants, m::Monitor, t)
 
                     # Reproduction event
                     born =
-                    reproduction_event!(g, c, Popgen, Popvox, Necvox, i, j, k, e,
-                    binGb)
+                    reproduction_event!(g, c, Popgen, Popvox, Necvox, i, j, k,
+                    e, binGb)
 
                     # Death event
                     dead = death_event!(g, c, binGb, Popvox, Necvox, Popgen, i,
@@ -86,12 +86,13 @@ function grid_time_step!(g::Grid, c::Constants, m::Monitor, t)
     g.Occ = findall(x -> x > 0, m.popt)
 end
 
-function normalize_prob(Prep)
+function normalize_prob(Prep::Float64)
     Prep = max(min(Prep, 1), 0)
 end
 
-function reproduction_event!(g::Grid, c::Constants, Popgen, Popvox, Necvox, i,
-    j, k, e, binGb)
+function reproduction_event!(g::Grid, c::Constants, Popgen::Float64,
+    Popvox::Float64, Necvox::Float64, i::Int64, j::Int64, k::Int64, e::Int64,
+    binGb::Array{Float64, 1})
     """
         Reproduction event
     """
@@ -104,8 +105,9 @@ function reproduction_event!(g::Grid, c::Constants, Popgen, Popvox, Necvox, i,
     return born
 end
 
-function death_event!(g::Grid, c::Constants, binGb, Popvox, Necvox, Popgen,
-    i, j, k, e)
+function death_event!(g::Grid, c::Constants, binGb::Array{Float64, 1},
+    Popvox::Float64, Necvox::Float64, Popgen::Float64, i::Int64, j::Int64,
+    k::Int64, e::Int64)
     """
         Death event
     """
@@ -118,8 +120,9 @@ function death_event!(g::Grid, c::Constants, binGb, Popvox, Necvox, Popgen,
     return dead
 end
 
-function migration_event!(g::Grid, c::Constants, binGb, Popvox, Popgen, Necvox,
-    i, j, k, e)
+function migration_event!(g::Grid, c::Constants, binGb::Array{Float64, 1},
+    Popvox::Float64, Popgen::Float64, Necvox::Float64, i::Int64, j::Int64,
+    k::Int64, e::Int64)
     """
         Migration event
     """
@@ -139,9 +142,11 @@ function migration_event!(g::Grid, c::Constants, binGb, Popvox, Popgen, Necvox,
                 xmov = i + movi
                 ymov = j + movj
                 zmov = k + movk
-                if xmov < N+1 && ymov < N+1 && zmov < N+1 && xmov > 0 && ymov > 0 && zmov > 0 && abs(movi)+abs(movj)+abs(movk)!=0
+                if xmov < N+1 && ymov < N+1 && zmov < N+1 && xmov > 0 &&
+                    ymov > 0 && zmov > 0 && abs(movi)+abs(movj)+abs(movk)!=0
                     neigh = neigh + 1
-                    g.Gnext[xmov, ymov, zmov, e] = g.Gnext[xmov, ymov, zmov, e] + gone[neigh]
+                    g.Gnext[xmov, ymov, zmov, e] =
+                                g.Gnext[xmov, ymov, zmov, e] + gone[neigh]
                     g.Gnext[i, j, k, e] = g.Gnext[i, j, k, e] - gone[neigh]
                 end
             end
@@ -149,7 +154,8 @@ function migration_event!(g::Grid, c::Constants, binGb, Popvox, Popgen, Necvox,
     end
 end
 
-function mutation_event!(g::Grid, c::Constants, binGb, Popgen, i, j, k, e)
+function mutation_event!(g::Grid, c::Constants, binGb::Array{Float64, 1},
+    Popgen::Float64, i::Int64, j::Int64, k::Int64, e::Int64)
     """
         Mutation event
     """

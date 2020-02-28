@@ -6,14 +6,14 @@
 include("monitor.jl")
 include("grid.jl")
 
-function compare_files(path1, path2)
+function compare_files(path1::String, path2::String)
     """
     Reads two text files from provided pathes and compares them.
     """
     return read(path1, String) == read(path2, String)
 end
 
-function compare_folders(path_folder_1, path_folder_2)
+function compare_folders(path_folder_1::String, path_folder_2::String)
     """
     Compare all files in folders `path_folder_1` and `path_folder_2`, returns
     true if number and content of files are equal.
