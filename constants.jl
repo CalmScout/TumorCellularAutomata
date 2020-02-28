@@ -63,8 +63,8 @@ struct Constants
         Mutweight = [0.18, 0.18, 0.32]
         Migweight = [0.65, 0.05, 0.05]
         # `Grate`, `Migrate` creation
-        Grate = 1
-        Migrate = 10
+        Grate = 1.0
+        Migrate = 10.0
         Grate, Migrate = adjust_grate_migrate(Grate, Migrate,
                                     MinGrate, MaxGrate, MinMigrate, MaxMigrate)
         Drate = rand(Uniform(MinDrate, MaxDrate))
@@ -109,8 +109,8 @@ struct Constants
     end
 end
 
-function adjust_grate_migrate(Grate, Migrate, MinGrate, MaxGrate, MinMigrate,
-    MaxMigrate)
+function adjust_grate_migrate(Grate::Float64, Migrate::Float64,
+    MinGrate::Int64, MaxGrate::Int64, MinMigrate::Int64, MaxMigrate::Int64)
     while Grate / Migrate < 0.25 || Migrate / Grate < 0.1
         Grate = rand(Uniform(MinGrate, MaxGrate))
         Migrate = rand(Uniform(MinMigrate, MaxMigrate))

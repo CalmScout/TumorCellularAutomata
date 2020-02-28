@@ -47,8 +47,9 @@ mutable struct Monitor
     end
 end
 
-function update_monitor_populations!(m::Monitor, c::Constants, G, Nec, Act,
-    i::Int64, j::Int64, k::Int64)
+function update_monitor_populations!(m::Monitor, c::Constants,
+        G::Array{Float64, 4}, Nec::Array{Float64, 3}, Act::Array{Float64, 3},
+        i::Int64, j::Int64, k::Int64)
     m.totpop[m.evalstep + 1] = m.totpop[m.evalstep + 1] + sum(G[i, j, k, :])
     m.totnec[m.evalstep + 1] = m.totnec[m.evalstep + 1] + sum(Nec[i, j, k])
     m.Rtotnew[m.evalstep + 1] = m.Rtotnew[m.evalstep + 1] + sum(Act[i, j, k])
