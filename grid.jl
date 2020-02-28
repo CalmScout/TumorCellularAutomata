@@ -47,7 +47,7 @@ function grid_time_step!(g::Grid, c::Constants, m::Monitor, t)
                 # Only evaluate population if there is at least 1 cell
                 if g.G[i, j, k, e] > 0
                     # receive binary representation
-                    binGb = decimal2binstr(e)
+                    binGb = decimal2binstr(e, c.alt)
 
                     # Retrieve voxel info
                     Popgen = g.G[i, j, k, e]
@@ -73,7 +73,7 @@ function grid_time_step!(g::Grid, c::Constants, m::Monitor, t)
                 end
             end
 
-            if t % round(c.Nstep / c.Neval) == 0
+            if t % c.NstepNevalRatio == 0
                 update_monitor_populations!(m, c, g.G, g.Nec, g.Act, i,
                     j, k)
             end

@@ -6,7 +6,7 @@ struct Constants
     # Set time of simulation
     deltat::Int64 # hours
     tspan::Int64
-    Nstep::Float64
+    Nstep::Int64
     # Set number of alterations
     alt::Int64
     # Grid dimensions N x N x N
@@ -36,17 +36,18 @@ struct Constants
     Mutrate::Float64
     wcube::Array{Float64, 1}
     NstepNevalRatio::Float64
+    TimeStart::Float64
 
     function Constants()
         deltat = 4
         # tspan = 6*10*365*deltat;
         tspan = 1000
-        Nstep = tspan / deltat
+        Nstep = floor(tspan / deltat)
         alt = 3
         N = 80
         P0 = 1e1
         K = 2e5
-        Neval = Int64(ceil(Nstep / 20)) + 1;
+        Neval = ceil(Nstep / 20) + 1
         threshold = 0.2 * K
         MinGrate = 80
         MaxGrate = 250
@@ -99,11 +100,12 @@ struct Constants
         end
 
         NstepNevalRatio = round(Nstep / Neval)
+        TimeStart = time()
 
         new(deltat, tspan, Nstep, alt, N, P0, K, Neval, threshold, MinGrate,
         MaxGrate, MinDrate, MaxDrate, MinMutrate, MaxMutrate, MinMigrate,
         MaxMigrate, Gweight, Dweight, Mutweight, Migweight, Grate, Migrate,
-        Drate, Mutrate, wcube, NstepNevalRatio)
+        Drate, Mutrate, wcube, NstepNevalRatio, TimeStart)
     end
 end
 

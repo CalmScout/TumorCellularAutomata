@@ -79,11 +79,11 @@ function update_monitor_stats!(m::Monitor, c::Constants)
             (m.pops[e, m.evalstep + 1] / m.totpop[m.evalstep + 1])^2
         end
     end
-    m.elapsed = m.elapsed + time() - start
+    m.elapsed = time() - c.TimeStart
     m.evalstep = m.evalstep + 1
 end
 
-function monitor2files(m::Monitor, subfolder="files/")
+function monitor2files(m::Monitor, subfolder::String="files/")
     dir_to_save = joinpath(@__DIR__, subfolder)
     writedlm(joinpath(dir_to_save, "Totpop.txt"), m.totpop)
     writedlm(joinpath(dir_to_save, "Totnec.txt"), m.totnec)

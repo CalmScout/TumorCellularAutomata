@@ -16,8 +16,6 @@ c = Constants()
 g = Grid(c)
 m = Monitor(c)
 
-start = time()
-
 if !isdir("files/")
     mkpath(joinpath(@__DIR__, "files/"))
 end
@@ -26,19 +24,13 @@ open(joinpath(@__DIR__, "files/Params.txt"), "w") do file
     println(file, c.Grate, " ", c.Drate, " ", c.Mutrate, " ", c.Migrate)
 end
 
-for t in 1:c.Nstep
-# @time while Vol2[evalstep] < 100000
-    # global t;
-
+@time for t in 1:c.Nstep
     grid_time_step!(g, c, m, t)
 
-    # Housekeeping
     if t % c.NstepNevalRatio == 0
         update_monitor_stats!(m, c)
         save_gen_space(g, t, c.N, "files/")
         print_curr_stats(m, t)
-
-        global start = time()
     end
 end
 

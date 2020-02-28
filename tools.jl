@@ -45,24 +45,15 @@ function compare_folders(path_folder_1, path_folder_2)
     return true
 end
 
-function decimal2binstr(e)
+function decimal2binstr(e::Int64, alt::Int64)
     """
         Converts decimal number to binary string.
     """
-
-    binG = string(e-1, base=2)     # First of all, we retrieve binary string
-    while length.(binG) < 3         # As the string may not be of length 0, we solve this
-        binG = string("0", binG)
-    end
-    binGa = split(binG, "")         # Now we need an array instead of a string
-    binGb = zeros(length(binGa))   # We create a new variable to store int array
-    for i in 1:length(binGa)        # We convert array elements from char to int
-        binGb[i] = parse(Int, binGa[i])
-    end
-    return binGb
+    binG = digits(e-1, base=2, pad=alt) |> reverse
+    return convert(Array{Float64, 1}, binG)
 end
 
-function save_gen_space(g::Grid, t::Float64, N::Int64, subdir="files/")
+function save_gen_space(g::Grid, t::Int64, N::Int64, subdir::String="files/")
     dir_to_save = joinpath(@__DIR__, subdir)
     filename = joinpath(dir_to_save, string("Gen_space_",
     string(Int64(floor(t))), ".txt"))
@@ -85,7 +76,7 @@ function save_gen_space(g::Grid, t::Float64, N::Int64, subdir="files/")
     end
 end
 
-function print_curr_stats(m::Monitor, t)
+function print_curr_stats(m::Monitor, t::Int64)
     println("Cell no: ", m.totpop[m.evalstep], "; Volume: ", m.Rvol[m.evalstep],
      "; Activity: ", m.Rtotnew[m.evalstep], "; Necrotics: ",
     m.totnec[m.evalstep], "; Het: ", m.Shannon[m.evalstep])
