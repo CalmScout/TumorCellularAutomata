@@ -22,11 +22,11 @@ mutable struct Grid
         # Assign initial cell number to population 1 at central voxel
         G[Int64(c.N / 2), Int64(c.N / 2), Int64(c.N / 2), 1] = c.P0
         # Create swapping matrices
-        Gnext = G
-        G2 = G
-        Necnext = Nec
-        Actnext = Act
-        Rhonext = Rho
+        Gnext = copy(G)
+        G2 = copy(G)
+        Necnext = copy(Nec)
+        Actnext = copy(Act)
+        Rhonext = copy(Rho)
         Occ = [CartesianIndex(Int(c.N / 2), Int(c.N / 2), Int(c.N / 2))]
         ROcc = [CartesianIndex(Int(c.N / 2), Int(c.N / 2), Int(c.N / 2))]
         new(G, Nec, Act, Rho, Gnext, G2, Necnext, Actnext, Rhonext, Occ, ROcc)
