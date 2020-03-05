@@ -80,8 +80,13 @@ function grid_time_step!(g::Grid, c::Constants, m::Monitor, t::Int64)
         end
     end
 
-    g.G2 = sum(g.G, dims = 4)
+    #update swapping matrices
+    g.G = copy(g.Gnext)
+    g.Nec = copy(g.Necnext)
+    g.Act = copy(g.Actnext)
+    g.Rho = copy(g.Rhonext)
 
+    g.G2 = sum(g.G, dims = 4)
     m.popt = g.G2[:, :, :, 1] + g.Nec
     g.Occ = findall(x -> x > 0, m.popt)
 end
