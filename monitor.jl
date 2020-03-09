@@ -1,19 +1,19 @@
-using DelimitedFiles
-
-include("constants.jl")
+@everywhere using DelimitedFiles
+@everywhere using SharedArrays
+@everywhere include("constants.jl")
 
 mutable struct Monitor
-    totpop::Array{Float64, 1}
-    totnec::Array{Float64, 1}
-    vol::Array{Float64, 1}
-    Rvol::Array{Float64, 1}
-    totnew::Array{Float64, 1}
-    Rtotnew::Array{Float64, 1}
-    Shannon::Array{Float64, 1}
-    Simpson::Array{Float64, 1}
-    pops::Array{Float64, 2}     # Total cell number per voxel (space)
-    popt::Array{Int64, 3}       # All populations cell number per time
-    Vol2::Array{Float64, 1}
+    totpop::SharedArray{Float64, 1}
+    totnec::SharedArray{Float64, 1}
+    vol::SharedArray{Float64, 1}
+    Rvol::SharedArray{Float64, 1}
+    totnew::SharedArray{Float64, 1}
+    Rtotnew::SharedArray{Float64, 1}
+    Shannon::SharedArray{Float64, 1}
+    Simpson::SharedArray{Float64, 1}
+    pops::SharedArray{Float64, 2}     # Total cell number per voxel (space)
+    popt::SharedArray{Int64, 3}       # All populations cell number per time
+    Vol2::SharedArray{Float64, 1}
     elapsed::Float64
     evalstep::Int64
     voxPop::Int64
@@ -22,24 +22,30 @@ mutable struct Monitor
         Neval = c.Neval
         N = c.N
         # Create monitor variables
-        totpop = zeros(Neval)
-        totpop[1] = c.P0
-        totnec = zeros(Neval)
-        vol = zeros(Neval)
-        Rvol = zeros(Neval)
-        Rvol[1] = 1
-        totnew = zeros(Neval)
-        Rtotnew = zeros(Neval)
-        Shannon = zeros(Neval)
-        Simpson = zeros(Neval)
-        Simpson[1] = 1
-        pops = zeros(2^c.alt, Neval) # Total cell number per voxel (space)
-        pops[1, 1] = c.P0
-        popt = Array{Int64}(undef, N, N, N) # All populations cell number per time
-        popt[Int64(N / 2), Int64(N / 2), Int64(N / 2)] = c.P0
-        Vol2 = zeros(Neval)
+        totpop = SharedArray{Float64, 1}((Neval,), init=S ->
+                                                    setindex!(S, [c.P0], [1]))
+        totnec = SharedArray{Float64, 1}((Neval,))
+        vol = SharedArray{Float64, 1}((Neval,))
+        Rvol = SharedArray{Float64, 1}((Neval,), init=S ->
+                                                    setindex!(S, [1], [1]))
+        totnew = SharedArray{Float64, 1}((Neval,))
+        Rtotnew = SharedArray{Float64, 1}((Neval,))
+        Shannon = SharedArray{Float64, 1}((Neval,))
+        Simpson = SharedArray{Float64, 1}((Neval,), init=S ->
+                                                    setindex!(S, [1], [1]))
+        # Total cell number per voxel (space)
+        function _init_pops!(S::SharedArray)
+            S[1, 1] = c.P0
+        end
+        pops = SharedArray{Float64, 2}((2^c.alt, Neval), init=_init_pops!)
+        # All populations cell number per time
+        function _init_popt!(S::SharedArray)
+            S[Int64(N / 2), Int64(N / 2), Int64(N / 2)] = c.P0
+        end
+        popt = SharedArray{Int64, 3}((N, N, N), init=_init_popt!)
+        Vol2 = SharedArray{Float64, 1}((Neval,))
         # Parameters of evolving system
-        elapsed = 0
+        elapsed = 0.0
         evalstep = 1
         voxPop = 0
         new(totpop, totnec, vol, Rvol, totnew, Rtotnew, Shannon, Simpson, pops,
@@ -48,8 +54,8 @@ mutable struct Monitor
 end
 
 function update_monitor_populations!(m::Monitor, c::Constants,
-        G::Array{Float64, 4}, Nec::Array{Float64, 3}, Act::Array{Float64, 3},
-        i::Int64, j::Int64, k::Int64)
+        G::SharedArray{Float64, 4}, Nec::SharedArray{Float64, 3},
+        Act::SharedArray{Float64, 3}, i::Int64, j::Int64, k::Int64)
     m.totpop[m.evalstep + 1] = m.totpop[m.evalstep + 1] + sum(G[i, j, k, :])
     m.totnec[m.evalstep + 1] = m.totnec[m.evalstep + 1] + sum(Nec[i, j, k])
     m.Rtotnew[m.evalstep + 1] = m.Rtotnew[m.evalstep + 1] + sum(Act[i, j, k])
@@ -68,9 +74,7 @@ end
 function update_monitor_stats!(m::Monitor, c::Constants)
     m.Shannon[m.evalstep + 1] = 0
     m.Simpson[m.evalstep + 1] = 0
-    ROcc =  findall(x -> x > c.threshold, m.popt)
-    m.Vol2[m.evalstep + 1] = size(ROcc, 1)
-    ROcc = []
+    m.Vol2[m.evalstep + 1] = size(findall(x -> x > c.threshold, m.popt), 1)
     for e = 1 : 2^c.alt
         if m.pops[e, m.evalstep + 1] > 0
             m.Shannon[m.evalstep + 1] = m.Shannon[m.evalstep + 1] -

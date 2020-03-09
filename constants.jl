@@ -37,6 +37,7 @@ struct Constants
     wcube::Array{Float64, 1}
     NstepNevalRatio::Float64
     TimeStart::Float64
+    OccMaxNum::Int64
 
     function Constants()
         deltat = 4
@@ -101,11 +102,12 @@ struct Constants
 
         NstepNevalRatio = round(Nstep / Neval)
         TimeStart = time()
+        OccMaxNum = Int64(ceil(0.55 * N^3))
 
         new(deltat, tspan, Nstep, alt, N, P0, K, Neval, threshold, MinGrate,
         MaxGrate, MinDrate, MaxDrate, MinMutrate, MaxMutrate, MinMigrate,
         MaxMigrate, Gweight, Dweight, Mutweight, Migweight, Grate, Migrate,
-        Drate, Mutrate, wcube, NstepNevalRatio, TimeStart)
+        Drate, Mutrate, wcube, NstepNevalRatio, TimeStart, OccMaxNum)
     end
 end
 

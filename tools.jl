@@ -3,8 +3,8 @@
     etc.
 """
 
-include("monitor.jl")
-include("grid.jl")
+@everywhere include("monitor.jl")
+@everywhere include("grid.jl")
 
 function compare_files(path1::String, path2::String)
     """
@@ -82,4 +82,21 @@ function print_curr_stats(m::Monitor, t::Int64)
     m.totnec[m.evalstep], "; Het: ", m.Shannon[m.evalstep])
     println("     Volume (alt): ", m.Vol2[m.evalstep])
     println("Time step: ", t, "; Time elapsed: ", m.elapsed)
+end
+
+function get_non_zeroes(arr::SharedArray{CartesianIndex{3}, 1})
+    """
+    Return slice of array till first zero CartesianIndex.
+    """
+    function get_first_zero_idx(arr::SharedArray{CartesianIndex{3}, 1})
+        result = -1
+        for idx in 1:length(arr)
+            if arr[idx] == CartesianIndex(0, 0, 0)
+                result = idx
+                break
+            end
+        end
+        return result
+    end
+    return arr[1 : get_first_zero_idx(arr) - 1]
 end

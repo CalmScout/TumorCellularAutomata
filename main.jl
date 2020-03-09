@@ -1,13 +1,18 @@
-# Will come in handy to random sample from binomial distributions
-using Distributions
-using Random
+using Distributed
+# utilize all available cores
+if nprocs() == 1
+    addprocs(Sys.CPU_THREADS)
+end
+
+@everywhere using Distributions
+@everywhere using Random
 
 # import predefined constants / parameters
-include("constants.jl")
+@everywhere include("constants.jl")
 # import helper functions
-include("tools.jl")
+@everywhere include("tools.jl")
 # main data structure
-include("grid.jl")
+@everywhere include("grid.jl")
 
 const seedVal = 3
 Random.seed!(seedVal)

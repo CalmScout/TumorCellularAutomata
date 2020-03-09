@@ -1,43 +1,50 @@
-include("constants.jl")
+@everywhere include("constants.jl")
+@everywhere using SharedArrays
 
 mutable struct Grid
-    G::Array{Float64, 4}
-    Nec::Array{Float64, 3}
-    Act::Array{Float64, 3}
-    Rho::Array{Float64, 3}
-    Gnext::Array{Float64, 4}
-    G2::Array{Float64, 4}
-    Necnext::Array{Float64, 3}
-    Actnext::Array{Float64, 3}
-    Rhonext::Array{Float64, 3}
-    Occ::Array{CartesianIndex{3}, 1}
-    ROcc::Array{CartesianIndex{3}, 1}
+    G::SharedArray{Float64, 4}
+    Nec::SharedArray{Float64, 3}
+    Act::SharedArray{Float64, 3}
+    Gnext::SharedArray{Float64, 4}
+    G2::SharedArray{Float64, 4}
+    Necnext::SharedArray{Float64, 3}
+    Actnext::SharedArray{Float64, 3}
+    Occ::SharedArray{CartesianIndex{3}, 1}
 
     function Grid(c::Constants)
         # Create array of population cells, necrotics, and activity per voxel
-        G = zeros(c.N, c.N, c.N, 2^c.alt)
-        Nec = zeros(c.N, c.N, c.N)
-        Act = zeros(c.N, c.N, c.N)
-        Rho = zeros(c.N, c.N, c.N)
-        # Assign initial cell number to population 1 at central voxel
-        G[Int64(c.N / 2), Int64(c.N / 2), Int64(c.N / 2), 1] = c.P0
+        function _initG!(S::SharedArray)
+            # Assign initial cell number to population 1 at central voxel
+            S[Int64(c.N / 2), Int64(c.N / 2), Int64(c.N / 2), 1] = c.P0
+        end
+
+        G = SharedArray{Float64, 4}((c.N, c.N, c.N, 2^c.alt), init=_initG!)
+        Nec = SharedArray{Float64, 3}((c.N, c.N, c.N))
+        Act = SharedArray{Float64, 3}((c.N, c.N, c.N))
+
+        function _initOcc!(S::SharedArray)
+            S[1] = CartesianIndex(Int(c.N / 2), Int(c.N / 2), Int(c.N / 2))
+        end
+
+        Occ = SharedArray{CartesianIndex{3}, 1}((c.OccMaxNum,), init=_initOcc!)
+
         # Create swapping matrices
         Gnext = copy(G)
         G2 = copy(G)
         Necnext = copy(Nec)
         Actnext = copy(Act)
-        Rhonext = copy(Rho)
-        Occ = [CartesianIndex(Int(c.N / 2), Int(c.N / 2), Int(c.N / 2))]
-        ROcc = [CartesianIndex(Int(c.N / 2), Int(c.N / 2), Int(c.N / 2))]
-        new(G, Nec, Act, Rho, Gnext, G2, Necnext, Actnext, Rhonext, Occ, ROcc)
+        new(G, Nec, Act, Gnext, G2, Necnext, Actnext, Occ)
     end
 end
 
 function grid_time_step!(g::Grid, c::Constants, m::Monitor, t::Int64)
-    for l in 1:length(g.Occ)
-        i = Int(g.Occ[l][1])
-        j = Int(g.Occ[l][2])
-        k = Int(g.Occ[l][3])
+    function one_thread_time_step!(Occ_el::CartesianIndex{3})
+        """
+        Helper function to run time step in one thread.
+        """
+        i = Int(Occ_el[1])
+        j = Int(Occ_el[2])
+        k = Int(Occ_el[3])
 
         # Reinitialize activity at each time step
         g.Act[i, j, k] = 0
@@ -80,15 +87,21 @@ function grid_time_step!(g::Grid, c::Constants, m::Monitor, t::Int64)
         end
     end
 
-    #update swapping matrices
+    # do work in several CPU threads
+    pmap(one_thread_time_step!, get_non_zeroes(g.Occ))
+
+    # update swapping matrices
     g.G = copy(g.Gnext)
     g.Nec = copy(g.Necnext)
     g.Act = copy(g.Actnext)
-    g.Rho = copy(g.Rhonext)
 
     g.G2 = sum(g.G, dims = 4)
     m.popt = g.G2[:, :, :, 1] + g.Nec
-    g.Occ = findall(x -> x > 0, m.popt)
+    # update g.Occ; length(g.Occ) non-decreasing function of time, no zeroing
+    # necessary
+    g.Occ[1:length(findall(x -> x > 0, m.popt))] = findall(x -> x > 0, m.popt)
+    # manually run garbage collector
+    @everywhere GC.gc()
 end
 
 function normalize_prob(Prep::Float64)
