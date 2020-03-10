@@ -47,7 +47,7 @@ function grid_time_step!(g::Grid, c::Constants, m::Monitor, t::Int64)
         k = Int(Occ_el[3])
 
         # Reinitialize activity at each time step
-        g.Act[i, j, k] = 0
+        g.Actnext[i, j, k] = 0
         # Only evaluate voxel if there is at least 1 cell
         if sum(g.G[i, j, k, :]) > 0
             for e in 1:2^c.alt
