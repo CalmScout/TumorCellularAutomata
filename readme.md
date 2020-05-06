@@ -1,7 +1,47 @@
 # Glioblastom Heterogenity Model
 
-Julia notebooks for neoplasm evolution modeling.
+Biologically based mathematical model of glioblastoma - brain tumor - development over time.
 
+
+Discrete mathematical model for neoplasm evolution modeling. Consists from *cellular automata* with 3D space grid. State of each cell is described by vector of parameters. Probabilistic cell state update rule model proliferation, mutation, migration, death events.
+
+## Model overview
+
+![](images/julia_1.png)
+
+
+**A.** Basic algorithm (for implementation purposes). Initialization requires creating a 3D grid, specifying the final simulation
+time, defining subpopulation traits and setting the initial state. Time iterations are then carried out until the final time is reached. At each time
+step and each voxel, all clonal populations are updated. This updating involves calculating how many cells will proliferate, migrate, mutate or die.
+When all populations at all voxels have been evaluated, all populations are updated synchronously.
+
+**B.** Two-dimensional example of model
+behaviour. Synchronous updating results in population increasing, diversifying and spreading at each time step, with probabilities computed
+according to the biological rules. Compartment color indicates occupancy. Cell color indicates cell type. 
+
+**C.** Bottom image is a slice of an actual
+simulation, with colours indicating occupation. Each voxel contains a variable number of cells and subtypes as depicted above.
+
+## 3D evolution visualization example
+
+![](images/julia_2.png)
+
+Example of tumor dynamics of the
+Mean Spherical Radius and renderized 3D tumor shape for three different time points (8.5, 10, 11.5 months).
+
+## My contributions
+
+* refactoring / debugging
+* migration from Matlab to Julia and code optimization
+* "best practices" of software development implementation
+![](images/exec_time.png)
+![](images/exec_time_log.png)
+
+## Notes
+
+This is supporting repo for submitted paper.
+
+# The following is manual on Julia setup
 ## Julia language installation with Juno IDE
 
 Prefereable way to work with code from current repo.
