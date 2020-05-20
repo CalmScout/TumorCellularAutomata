@@ -30,10 +30,12 @@ Example of tumor dynamics of the
 Mean Spherical Radius and renderized 3D tumor shape for three different time points (8.5, 10, 11.5 months).
 
 ## My contributions
+
 * model verification
 * refactoring / debugging
 * migration from Matlab to Julia
 * performance optimization and parallelization
+
 ![](images/exec_time.png)
 ![](images/exec_time_log.png)
 
